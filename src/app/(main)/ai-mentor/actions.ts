@@ -14,6 +14,7 @@ const roadmapSchema = z.object({
   branch: z.string().min(1, "Branch is required."),
   college: z.string().min(1, "College is required."),
   targetCompany: z.string().min(1, "Target company is required."),
+  role: z.string().min(1, "Role is required."),
 })
 
 export type FormState = {
@@ -25,6 +26,7 @@ export type FormState = {
     branch?: string[]
     college?: string[]
     targetCompany?: string[]
+    role?: string[]
   }
 }
 
@@ -37,6 +39,7 @@ export async function getPrepRoadmap(
     branch: formData.get("branch"),
     college: formData.get("college"),
     targetCompany: formData.get("targetCompany"),
+    role: formData.get("role"),
   })
 
   if (!validatedFields.success) {

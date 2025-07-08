@@ -16,6 +16,7 @@ const GeneratePrepRoadmapInputSchema = z.object({
   branch: z.string().describe('The branch of the student (e.g., Computer Science).'),
   college: z.string().describe('The college of the student.'),
   targetCompany: z.string().describe('The target company for placement.'),
+  role: z.string().describe('The target role for placement (e.g., Software Engineer).'),
 });
 
 export type GeneratePrepRoadmapInput = z.infer<typeof GeneratePrepRoadmapInputSchema>;
@@ -60,7 +61,7 @@ const prompt = ai.definePrompt({
   output: {schema: GeneratePrepRoadmapOutputSchema},
   prompt: `You are an AI mentor specializing in helping Tier-3 college students prepare for placements.
 
-  Based on the student's CGPA, branch, college, and target company, generate a personalized 30-day roadmap, a list of the most frequently asked interview questions with answers, and suggest core concepts to study.
+  Based on the student's CGPA, branch, college, target company, and target role, generate a personalized 30-day roadmap, a list of the most frequently asked interview questions with answers, and suggest core concepts to study.
 
   The output must be in a structured JSON format according to the output schema.
 
@@ -69,6 +70,7 @@ const prompt = ai.definePrompt({
   Branch: {{{branch}}}
   College: {{{college}}}
   Target Company: {{{targetCompany}}}
+  Target Role: {{{role}}}
 
   Generate a detailed 30-day roadmap with specific topics and tasks for each day.
   Generate a list of the most common interview questions for the target company and the student's branch, along with concise answers.

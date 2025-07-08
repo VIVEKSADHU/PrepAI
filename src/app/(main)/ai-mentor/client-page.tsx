@@ -122,6 +122,18 @@ export function AiMentorClientPage() {
                   <p className="text-sm text-destructive">{state.fieldErrors.targetCompany}</p>
                 )}
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="role">Target Role</Label>
+                <Input
+                  id="role"
+                  name="role"
+                  placeholder="e.g., Software Engineer"
+                  required
+                />
+                 {state.fieldErrors?.role && (
+                  <p className="text-sm text-destructive">{state.fieldErrors.role}</p>
+                )}
+              </div>
             </CardContent>
             <CardFooter>
               <SubmitButton />
