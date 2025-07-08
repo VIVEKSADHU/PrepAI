@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -20,33 +19,13 @@ import { useToast } from "@/hooks/use-toast"
 import { submitExperienceAction } from "./actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
-
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  college: z.string().min(2, {
-    message: "College name is required.",
-  }),
-  cgpa: z.coerce.number().min(0, {message: "CGPA must be positive."}).max(10, {
-    message: "CGPA cannot be more than 10.",
-  }),
-  branch: z.string().min(2, {
-    message: "Branch is required.",
-  }),
-  targetCompany: z.string().min(2, {
-    message: "Target company is required.",
-  }),
-  onlineRound: z.string().optional(),
-  techRound: z.string().optional(),
-  hrRound: z.string().optional(),
-})
+import { experienceSchema } from "./schema"
 
 export function ExperienceForm() {
   const { toast } = useToast()
   
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof experienceSchema>>({
+    resolver: zodResolver(experienceSchema),
     defaultValues: {
       name: "",
       college: "",
@@ -59,7 +38,7 @@ export function ExperienceForm() {
     },
   })
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof experienceSchema>) {
     const result = await submitExperienceAction(values);
     if(result.success) {
         toast({
