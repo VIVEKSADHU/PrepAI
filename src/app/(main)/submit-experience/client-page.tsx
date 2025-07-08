@@ -108,17 +108,137 @@ export function ExperienceForm() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <fieldset disabled={isDemoMode} className="space-y-8 group">
                 <div className="grid md:grid-cols-2 gap-8">
-                    <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Name *</FormLabel> <FormControl> <Input placeholder="Your full name" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="college" render={({ field }) => ( <FormItem> <FormLabel>College *</FormLabel> <FormControl> <Input placeholder="Your college name" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="branch" render={({ field }) => ( <FormItem> <FormLabel>Branch *</FormLabel> <FormControl> <Input placeholder="e.g. Computer Science" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="cgpa" render={({ field }) => ( <FormItem> <FormLabel>CGPA *</FormLabel> <FormControl> <Input type="number" step="0.1" placeholder="e.g. 8.5" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="company" render={({ field }) => ( <FormItem> <FormLabel>Company *</FormLabel> <FormControl> <Input placeholder="e.g. Google" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="role" render={({ field }) => ( <FormItem> <FormLabel>Role *</FormLabel> <FormControl> <Input placeholder="e.g. Software Engineer Intern" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                    <FormField control={form.control} name="year" render={({ field }) => ( <FormItem> <FormLabel>Placement Year *</FormLabel> <FormControl> <Input type="number" placeholder="e.g. 2024" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your full name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="college"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>College *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Your college name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="branch"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Branch *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. Computer Science" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="cgpa"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>CGPA *</FormLabel>
+                          <FormControl>
+                            <Input type="number" step="0.1" placeholder="e.g. 8.5" {...field} value={field.value ?? ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="company"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Company *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. Google" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="role"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Role *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g. Software Engineer Intern" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="year"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Placement Year *</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="e.g. 2024" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                 </div>
-                 <FormField control={form.control} name="round1" render={({ field }) => ( <FormItem> <FormLabel>Online Assessment / Round 1</FormLabel> <FormControl> <Textarea placeholder="Describe the first round. What kind of questions were asked?" className="resize-y" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                 <FormField control={form.control} name="round2" render={({ field }) => ( <FormItem> <FormLabel>Technical Round(s) / Round 2</FormLabel> <FormControl> <Textarea placeholder="Describe the technical interviews. Topics covered, difficulty level, etc." className="resize-y" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
-                 <FormField control={form.control} name="round3" render={({ field }) => ( <FormItem> <FormLabel>HR / Managerial Round / Round 3</FormLabel> <FormControl> <Textarea placeholder="Describe the final round. What kind of behavioral questions were asked?" className="resize-y" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                 <FormField
+                  control={form.control}
+                  name="round1"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Online Assessment / Round 1</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Describe the first round. What kind of questions were asked?" className="resize-y" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="round2"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Technical Round(s) / Round 2</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Describe the technical interviews. Topics covered, difficulty level, etc." className="resize-y" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="round3"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>HR / Managerial Round / Round 3</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="Describe the final round. What kind of behavioral questions were asked?" className="resize-y" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <Button type="submit" disabled={form.formState.isSubmitting || isDemoMode}>
                     {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
