@@ -68,6 +68,7 @@ async function updateCompanyData(companyName: string) {
         numExperiences: numExperiences,
         avgCgpa: avgCgpa,
         aiSummary: summary,
+        aiHint: companyDoc.exists() ? companyDoc.data().aiHint || "company building" : "company building",
     }
 
     if (companyDoc.exists()) {
