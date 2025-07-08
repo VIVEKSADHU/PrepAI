@@ -6,7 +6,7 @@ import {
 } from "@/ai/flows/generate-prep-roadmap"
 import { z } from "zod"
 
-export const roadmapSchema = z.object({
+const roadmapSchema = z.object({
   cgpa: z.coerce
     .number({ invalid_type_error: "CGPA must be a number." })
     .min(0, "CGPA must be positive.")
