@@ -1,16 +1,7 @@
-import { getApp, getApps, initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
+import { getFirestore, type Firestore } from "firebase/firestore";
 
-// This object holds your Firebase project's configuration.
-// The values are read from the .env file.
-//
-// IMPORTANT: You must replace the placeholder values in your .env file
-// with the actual keys from your Firebase project's settings. To find them:
-// 1. Go to the Firebase Console -> Your Project -> Project settings.
-// 2. In the "General" tab, scroll to the "Your apps" card.
-// 3. Select your web app and find the "SDK setup and configuration".
-// 4. Copy the config values into the matching variables in the .env file.
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -20,13 +11,20 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Initialize Firebase
-// This check prevents initializing the app more than once.
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
+let googleProvider: GoogleAuthProvider | null = null;
+let isFirebaseEnabled = false;
 
-// Get references to Firebase services
-const auth = getAuth(app);
-const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider();
+// This check prevents the app from crashing if the keys are missing.
+// It will run in a "demo mode" with warnings until the keys are provided.
+if (firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("YOUR_")) {
+    isFirebaseEnabled = true;
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    auth = getAuth(app);
+    db = getFirestore(app);
+    googleProvider = new GoogleAuthProvider();
+}
 
-export { app, auth, db, googleProvider };
+export { app, auth, db, googleProvider, isFirebaseEnabled };

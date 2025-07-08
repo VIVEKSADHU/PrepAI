@@ -2,7 +2,7 @@
 
 import { z } from "zod"
 import { experienceSchema } from "./schema"
-import { db } from "@/lib/firebase"
+import { db, isFirebaseEnabled } from "@/lib/firebase"
 import {
   collection,
   addDoc,
@@ -23,9 +23,10 @@ type ActionResponse = {
 }
 
 async function updateCompanyData(companyName: string) {
+  if (!isFirebaseEnabled || !db) return; 
+
   const companyRef = doc(db, "companies", companyName)
 
-  // Fetch all experiences for the company to calculate stats
   const allExperiencesQuery = query(
     collection(db, "experiences"),
     where("company", "==", companyName),
@@ -38,7 +39,6 @@ async function updateCompanyData(companyName: string) {
   const totalCgpa = experiences.reduce((sum, exp) => sum + (exp.cgpa || 0), 0)
   const avgCgpa = numExperiences > 0 ? totalCgpa / numExperiences : 0
 
-  // Get text from last 10 experiences for AI summary
   const experienceTexts = experiences
     .slice(0, 10)
     .map(data => {
@@ -60,12 +60,11 @@ async function updateCompanyData(companyName: string) {
     }
   }
 
-  // Use a transaction to safely update the company document
   await runTransaction(db, async (transaction) => {
     const companyDoc = await transaction.get(companyRef)
     const dataToSet = {
         name: companyName,
-        logoURL: `https://placehold.co/96x96.png`, // Default placeholder
+        logoURL: `https://placehold.co/96x96.png`, 
         numExperiences: numExperiences,
         avgCgpa: avgCgpa,
         aiSummary: summary,
@@ -85,6 +84,11 @@ export async function submitExperienceAction(
   uid: string,
   email: string
 ): Promise<ActionResponse> {
+  
+  if (!isFirebaseEnabled) {
+    return { success: false, message: "Firebase is not configured. Cannot submit experience." };
+  }
+  
   const validatedFields = experienceSchema.safeParse(data)
   if (!validatedFields.success) {
     return { success: false, message: "Invalid data provided." }
@@ -93,8 +97,7 @@ export async function submitExperienceAction(
   const { company, ...experienceData } = validatedFields.data
 
   try {
-    // 1. Save the new experience
-    await addDoc(collection(db, "experiences"), {
+    await addDoc(collection(db!, "experiences"), {
       ...experienceData,
       company,
       uid,
@@ -102,7 +105,6 @@ export async function submitExperienceAction(
       createdAt: serverTimestamp(),
     })
     
-    // 2. Update company aggregate data and AI summary
     await updateCompanyData(company)
 
     return {
