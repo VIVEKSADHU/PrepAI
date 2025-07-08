@@ -11,11 +11,24 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Check for placeholder values and provide a more descriptive error.
-if (!firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("YOUR_")) {
-    throw new Error("Missing or placeholder Firebase API Key in .env file. Please add your Firebase project's web app configuration to proceed.");
+// This function checks if all the required Firebase config keys are present and not placeholders.
+function validateFirebaseConfig(config: typeof firebaseConfig) {
+    const missingOrPlaceholderKeys = Object.entries(config)
+        .filter(([key, value]) => !value || (typeof value === 'string' && value.includes('YOUR_')))
+        .map(([key]) => `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`);
+
+    if (missingOrPlaceholderKeys.length > 0) {
+        throw new Error(
+`Firebase configuration is missing or incomplete in your .env file.
+Please set the following environment variables:
+${missingOrPlaceholderKeys.join('\n')}
+
+You can find these values in your Firebase project settings under your web app's configuration.`
+        );
+    }
 }
 
+validateFirebaseConfig(firebaseConfig);
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
