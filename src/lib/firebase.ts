@@ -11,6 +11,12 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
+// Check for placeholder values and provide a more descriptive error.
+if (!firebaseConfig.apiKey || firebaseConfig.apiKey.startsWith("YOUR_")) {
+    throw new Error("Missing or placeholder Firebase API Key in .env file. Please add your Firebase project's web app configuration to proceed.");
+}
+
+
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
