@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -18,9 +19,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { submitExperienceAction } from "./actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Loader2, Terminal } from "lucide-react"
 import { experienceSchema } from "./schema"
 import { useAuth } from "@/contexts/auth-context"
+import { isDemoMode } from "@/lib/firebase.client"
 
 export function ExperienceForm() {
   const { toast } = useToast()
@@ -41,8 +44,25 @@ export function ExperienceForm() {
       round3: "",
     },
   })
+  
+  // Pre-fill name from auth context if available
+  useEffect(() => {
+    if (user?.displayName) {
+        form.setValue('name', user.displayName);
+    }
+  }, [user, form]);
+
 
   async function onSubmit(values: z.infer<typeof experienceSchema>) {
+    if (isDemoMode) {
+      toast({
+        variant: "destructive",
+        title: "Demo Mode",
+        description: "Submissions are disabled in demo mode.",
+      });
+      return;
+    }
+
     if (!user) {
         toast({
             variant: "destructive",
@@ -75,8 +95,18 @@ export function ExperienceForm() {
             <CardDescription>All fields with * are required.</CardDescription>
         </CardHeader>
         <CardContent>
+            {isDemoMode && (
+              <Alert className="mb-6">
+                  <Terminal className="h-4 w-4" />
+                  <AlertTitle>Demo Mode</AlertTitle>
+                  <AlertDescription>
+                    This form is disabled. Configure your Firebase credentials to enable submissions.
+                  </AlertDescription>
+              </Alert>
+            )}
             <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <fieldset disabled={isDemoMode} className="space-y-8 group">
                 <div className="grid md:grid-cols-2 gap-8">
                     <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Name *</FormLabel> <FormControl> <Input placeholder="Your full name" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
                     <FormField control={form.control} name="college" render={({ field }) => ( <FormItem> <FormLabel>College *</FormLabel> <FormControl> <Input placeholder="Your college name" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
@@ -90,10 +120,11 @@ export function ExperienceForm() {
                  <FormField control={form.control} name="round2" render={({ field }) => ( <FormItem> <FormLabel>Technical Round(s) / Round 2</FormLabel> <FormControl> <Textarea placeholder="Describe the technical interviews. Topics covered, difficulty level, etc." className="resize-y" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
                  <FormField control={form.control} name="round3" render={({ field }) => ( <FormItem> <FormLabel>HR / Managerial Round / Round 3</FormLabel> <FormControl> <Textarea placeholder="Describe the final round. What kind of behavioral questions were asked?" className="resize-y" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
                 
-                <Button type="submit" disabled={form.formState.isSubmitting}>
+                <Button type="submit" disabled={form.formState.isSubmitting || isDemoMode}>
                     {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Submit Experience
                 </Button>
+                </fieldset>
             </form>
             </Form>
         </CardContent>

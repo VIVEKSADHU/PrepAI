@@ -4,7 +4,9 @@ import { useEffect, useState } from "react"
 import { collection, getDocs, orderBy, query } from "firebase/firestore"
 import { CompanyCard } from "@/components/company-card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { db } from "@/lib/firebase.client"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { db, isDemoMode } from "@/lib/firebase.client"
+import { Terminal } from "lucide-react"
 
 type CompanyData = {
   id: string
@@ -14,6 +16,13 @@ type CompanyData = {
   avgCGPA: number
   aiHint?: string
 }
+
+const mockCompanies: CompanyData[] = [
+    { id: "1", name: "Innovate Inc.", logoURL: "https://placehold.co/96x96.png", numExperiences: 42, avgCGPA: 8.7, aiHint: "office building" },
+    { id: "2", name: "QuantumLeap", logoURL: "https://placehold.co/96x96.png", numExperiences: 15, avgCGPA: 9.1, aiHint: "tech startup" },
+    { id: "3", name: "DataWeavers", logoURL: "https://placehold.co/96x96.png", numExperiences: 28, avgCGPA: 8.2, aiHint: "data center" },
+    { id: "4", name: "Synergy Corp", logoURL: "https://placehold.co/96x96.png", numExperiences: 50, avgCGPA: 8.5, aiHint: "corporate building" },
+]
 
 function DashboardSkeleton() {
   return (
@@ -31,6 +40,19 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function getCompanies(): Promise<void> {
+      if (isDemoMode) {
+        setCompanies(mockCompanies);
+        setLoading(false);
+        return;
+      }
+      
+      // This check is important
+      if (!db) {
+        setLoading(false);
+        setCompanies([]);
+        return;
+      }
+
       try {
         const companiesRef = collection(db, "companies")
         const q = query(companiesRef, orderBy("name", "asc"))
@@ -73,6 +95,20 @@ export default function DashboardPage() {
         </p>
       </div>
 
+      {isDemoMode && (
+          <Alert>
+              <Terminal className="h-4 w-4" />
+              <AlertTitle>Demo Mode</AlertTitle>
+              <AlertDescription>
+                This is a demo. Company data is mocked. Please configure your Firebase credentials in 
+                <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold mx-1">
+                  src/lib/firebase.client.ts
+                </code> 
+                to connect to your own database.
+              </AlertDescription>
+          </Alert>
+      )}
+
       {loading ? (
         <DashboardSkeleton />
       ) : companies.length > 0 ? (
@@ -93,7 +129,10 @@ export default function DashboardPage() {
           <div className="text-center">
             <h3 className="text-lg font-semibold">No companies found</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Could not load company data or no experiences have been submitted yet.
+              {isDemoMode 
+                ? "This is where your company data will appear."
+                : "Could not load company data or no experiences have been submitted yet."
+              }
             </p>
           </div>
         </div>

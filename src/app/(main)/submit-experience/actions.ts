@@ -12,6 +12,7 @@ import {
   getDocs,
   runTransaction,
   doc,
+  orderBy,
 } from "firebase/firestore"
 import { summarizePreparationTips } from "@/ai/flows/summarize-preparation-tips"
 
@@ -21,6 +22,9 @@ type ActionResponse = {
 }
 
 async function updateCompanyData(companyName: string) {
+  // Guard against null db in demo mode
+  if (!db) return;
+  
   const companyRef = doc(db, "companies", companyName)
 
   const allExperiencesQuery = query(
@@ -80,6 +84,11 @@ export async function submitExperienceAction(
   uid: string,
   email: string
 ): Promise<ActionResponse> {
+  // Guard against null db in demo mode
+  if (!db) {
+    return { success: false, message: "Submissions are disabled in demo mode because the database is not configured." }
+  }
+
   const validatedFields = experienceSchema.safeParse(data)
   if (!validatedFields.success) {
     return { success: false, message: "Invalid data provided." }
