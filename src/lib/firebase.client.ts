@@ -4,15 +4,16 @@ import { getFirestore, type Firestore } from "firebase/firestore";
 
 // WARNING: Hardcoding credentials is not recommended for production.
 // This is for prototyping purposes only.
-// Replace these with your actual Firebase project's web app credentials.
+// Replace the "YOUR_..." placeholders with your actual Firebase project's web app credentials.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "YOUR_API_KEY", // Find this in your Firebase project settings
+  authDomain: "prepai-bcb3d.firebaseapp.com",
+  projectId: "prepai-bcb3d",
+  storageBucket: "prepai-bcb3d.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // Find this in your Firebase project settings
+  appId: "YOUR_APP_ID" // Find this in your Firebase project settings
 };
+
 
 let app: FirebaseApp;
 let auth: Auth;
