@@ -4,14 +4,13 @@ import type { ReactNode } from "react"
 import React, { createContext, useContext, useEffect, useState } from "react"
 import type { User } from "firebase/auth"
 import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth"
-import { auth, db, googleProvider, isFirebaseEnabled } from "@/lib/firebase"
+import { auth, db, googleProvider } from "@/lib/firebase.client"
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 
 interface AuthContextType {
   user: User | null
   loading: boolean
-  isFirebaseEnabled: boolean
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
 }
@@ -24,27 +23,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast()
 
   useEffect(() => {
-    if (!isFirebaseEnabled || !auth) {
-      setLoading(false)
-      return
-    }
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user)
-        if (db) {
-          const userRef = doc(db, "users", user.uid);
-          const userSnap = await getDoc(userRef);
-          if (!userSnap.exists()) {
-            await setDoc(userRef, {
-              uid: user.uid,
-              name: user.displayName,
-              email: user.email,
-              college: "",
-              branch: "",
-              savedCompanies: [],
-              createdAt: serverTimestamp(),
-            });
-          }
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          await setDoc(userRef, {
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            college: "",
+            branch: "",
+            savedCompanies: [],
+            createdAt: serverTimestamp(),
+          });
         }
       } else {
         setUser(null)
@@ -56,14 +49,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signInWithGoogle = async () => {
-    if (!isFirebaseEnabled || !auth || !googleProvider) {
-      toast({
-        variant: "destructive",
-        title: "Firebase Not Configured",
-        description: "Please add your Firebase keys to the .env file to enable login.",
-      });
-      return;
-    }
     try {
       await signInWithPopup(auth, googleProvider)
     } catch (error) {
@@ -77,7 +62,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
-    if (!auth) return;
     try {
       await firebaseSignOut(auth)
     } catch (error) {
@@ -85,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const value = { user, loading, isFirebaseEnabled, signInWithGoogle, signOut }
+  const value = { user, loading, signInWithGoogle, signOut }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

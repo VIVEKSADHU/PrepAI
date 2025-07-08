@@ -2,7 +2,7 @@
 
 import { z } from "zod"
 import { experienceSchema } from "./schema"
-import { db, isFirebaseEnabled } from "@/lib/firebase"
+import { db } from "@/lib/firebase.client"
 import {
   collection,
   addDoc,
@@ -10,8 +10,6 @@ import {
   query,
   where,
   getDocs,
-  limit,
-  orderBy,
   runTransaction,
   doc,
 } from "firebase/firestore"
@@ -23,8 +21,6 @@ type ActionResponse = {
 }
 
 async function updateCompanyData(companyName: string) {
-  if (!isFirebaseEnabled || !db) return; 
-
   const companyRef = doc(db, "companies", companyName)
 
   const allExperiencesQuery = query(
@@ -84,11 +80,6 @@ export async function submitExperienceAction(
   uid: string,
   email: string
 ): Promise<ActionResponse> {
-  
-  if (!isFirebaseEnabled) {
-    return { success: false, message: "Firebase is not configured. Cannot submit experience." };
-  }
-  
   const validatedFields = experienceSchema.safeParse(data)
   if (!validatedFields.success) {
     return { success: false, message: "Invalid data provided." }
@@ -97,7 +88,7 @@ export async function submitExperienceAction(
   const { company, ...experienceData } = validatedFields.data
 
   try {
-    await addDoc(collection(db!, "experiences"), {
+    await addDoc(collection(db, "experiences"), {
       ...experienceData,
       company,
       uid,
