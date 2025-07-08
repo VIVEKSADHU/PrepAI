@@ -2,6 +2,15 @@ import { getApp, getApps, initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+// This object holds your Firebase project's configuration.
+// The values are read from the .env file.
+//
+// IMPORTANT: You must replace the placeholder values in your .env file
+// with the actual keys from your Firebase project's settings. To find them:
+// 1. Go to the Firebase Console -> Your Project -> Project settings.
+// 2. In the "General" tab, scroll to the "Your apps" card.
+// 3. Select your web app and find the "SDK setup and configuration".
+// 4. Copy the config values into the matching variables in the .env file.
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -11,27 +20,11 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// This function checks if all the required Firebase config keys are present and not placeholders.
-function validateFirebaseConfig(config: typeof firebaseConfig) {
-    const missingOrPlaceholderKeys = Object.entries(config)
-        .filter(([key, value]) => !value || (typeof value === 'string' && value.includes('YOUR_')))
-        .map(([key]) => `NEXT_PUBLIC_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`);
-
-    if (missingOrPlaceholderKeys.length > 0) {
-        throw new Error(
-`Firebase configuration is missing or incomplete in your .env file.
-Please set the following environment variables:
-${missingOrPlaceholderKeys.join('\n')}
-
-You can find these values in your Firebase project settings under your web app's configuration.`
-        );
-    }
-}
-
-validateFirebaseConfig(firebaseConfig);
-
 // Initialize Firebase
+// This check prevents initializing the app more than once.
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+
+// Get references to Firebase services
 const auth = getAuth(app);
 const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
