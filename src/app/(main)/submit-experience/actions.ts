@@ -15,6 +15,7 @@ import {
   orderBy,
 } from "firebase/firestore"
 import { summarizePreparationTips } from "@/ai/flows/summarize-preparation-tips"
+import { slugify } from "@/lib/utils"
 
 type ActionResponse = {
   success: boolean
@@ -62,13 +63,15 @@ async function updateCompanyData(companyName: string) {
 
   await runTransaction(db, async (transaction) => {
     const companyDoc = await transaction.get(companyRef)
+    const existingData = companyDoc.exists() ? companyDoc.data() : {};
+
     const dataToSet = {
         name: companyName,
-        logoURL: `https://placehold.co/96x96.png`, 
+        logoURL: existingData.logoURL || `https://avatar.vercel.sh/${slugify(companyName)}.png?size=96`,
         numExperiences: numExperiences,
         avgCgpa: avgCgpa,
         aiSummary: summary,
-        aiHint: companyDoc.exists() ? companyDoc.data().aiHint || "company building" : "company building",
+        aiHint: existingData.aiHint || "company building",
     }
 
     if (companyDoc.exists()) {

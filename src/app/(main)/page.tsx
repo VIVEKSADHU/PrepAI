@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { db, isDemoMode } from "@/lib/firebase.client"
 import { Terminal } from "lucide-react"
+import { slugify } from "@/lib/utils"
 
 type CompanyData = {
   id: string
@@ -18,10 +19,10 @@ type CompanyData = {
 }
 
 const mockCompanies: CompanyData[] = [
-    { id: "1", name: "Innovate Inc.", logoURL: "https://placehold.co/96x96.png", numExperiences: 42, avgCGPA: 8.7, aiHint: "office building" },
-    { id: "2", name: "QuantumLeap", logoURL: "https://placehold.co/96x96.png", numExperiences: 15, avgCGPA: 9.1, aiHint: "tech startup" },
-    { id: "3", name: "DataWeavers", logoURL: "https://placehold.co/96x96.png", numExperiences: 28, avgCGPA: 8.2, aiHint: "data center" },
-    { id: "4", name: "Synergy Corp", logoURL: "https://placehold.co/96x96.png", numExperiences: 50, avgCGPA: 8.5, aiHint: "corporate building" },
+    { id: "1", name: "Innovate Inc.", logoURL: `https://avatar.vercel.sh/${slugify("Innovate Inc.")}.png?size=96`, numExperiences: 42, avgCGPA: 8.7, aiHint: "office building" },
+    { id: "2", name: "QuantumLeap", logoURL: `https://avatar.vercel.sh/${slugify("QuantumLeap")}.png?size=96`, numExperiences: 15, avgCGPA: 9.1, aiHint: "tech startup" },
+    { id: "3", name: "DataWeavers", logoURL: `https://avatar.vercel.sh/${slugify("DataWeavers")}.png?size=96`, numExperiences: 28, avgCGPA: 8.2, aiHint: "data center" },
+    { id: "4", name: "Synergy Corp", logoURL: `https://avatar.vercel.sh/${slugify("Synergy Corp")}.png?size=96`, numExperiences: 50, avgCGPA: 8.5, aiHint: "corporate building" },
 ]
 
 function DashboardSkeleton() {
@@ -66,7 +67,7 @@ export default function DashboardPage() {
         const companiesData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           name: doc.data().name,
-          logoURL: doc.data().logoURL || "https://placehold.co/96x96.png",
+          logoURL: doc.data().logoURL || `https://avatar.vercel.sh/${slugify(doc.data().name)}.png?size=96`,
           numExperiences: doc.data().numExperiences || 0,
           avgCGPA: doc.data().avgCGPA || 0,
           aiHint: doc.data().aiHint || "company building",

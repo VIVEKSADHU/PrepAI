@@ -13,7 +13,7 @@ const demoUser = {
     uid: "demo-user-uid",
     email: "demo@example.com",
     displayName: "Demo User",
-    photoURL: "https://placehold.co/96x96.png",
+    photoURL: "https://avatar.vercel.sh/demo-user.png?size=96",
 } as User;
 
 interface AuthContextType {
