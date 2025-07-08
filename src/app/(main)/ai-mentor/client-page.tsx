@@ -19,8 +19,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Bot, BrainCircuit, HelpCircle, Loader2, Sparkles } from "lucide-react"
+import { Bot, BrainCircuit, CalendarDays, CheckCircle2, HelpCircle, Loader2, Sparkles } from "lucide-react"
 import { useEffect, useActionState } from "react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -150,10 +149,28 @@ export function AiMentorClientPage() {
               <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
                 <AccordionItem value="item-1">
                   <AccordionTrigger className="text-lg font-semibold">
+                    <CalendarDays className="inline-block mr-2" />
                     30-Day Preparation Roadmap
                   </AccordionTrigger>
-                  <AccordionContent className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-wrap">
-                    {state.data.roadmap}
+                  <AccordionContent>
+                    <div className="relative pl-6 pt-4">
+                      <div className="absolute left-[7px] top-2 h-full w-0.5 bg-border" />
+                      {state.data.roadmap.map((day, index) => (
+                        <div key={index} className="relative mb-8 pl-8">
+                          <div className="absolute -left-1.5 top-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">
+                            {day.day}
+                          </div>
+                          <div className="pl-4">
+                            <h4 className="font-semibold text-primary-foreground/90">{day.title}</h4>
+                            <ul className="mt-2 list-disc list-inside space-y-1.5 text-muted-foreground">
+                              {day.tasks.map((task, taskIndex) => (
+                                <li key={taskIndex}>{task}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2">
@@ -161,8 +178,19 @@ export function AiMentorClientPage() {
                     <HelpCircle className="inline-block mr-2" />
                     Frequently Asked Questions
                   </AccordionTrigger>
-                  <AccordionContent className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-wrap">
-                    {state.data.frequentlyAskedQuestions}
+                  <AccordionContent>
+                    <Accordion type="single" collapsible className="w-full space-y-2 pt-2">
+                      {state.data.frequentlyAskedQuestions.map((faq, index) => (
+                        <AccordionItem value={`faq-${index}`} key={index} className="rounded-md border bg-background/50 px-4 data-[state=open]:bg-accent/50">
+                          <AccordionTrigger className="py-3 text-left hover:no-underline">
+                            {faq.question}
+                          </AccordionTrigger>
+                          <AccordionContent className="pt-2 pb-4 text-muted-foreground">
+                            {faq.answer}
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                    </Accordion>
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-3">
@@ -170,8 +198,16 @@ export function AiMentorClientPage() {
                     <BrainCircuit className="inline-block mr-2" />
                     Core Concepts to Study
                   </AccordionTrigger>
-                  <AccordionContent className="prose prose-sm max-w-none text-muted-foreground whitespace-pre-wrap">
-                    {state.data.coreConcepts}
+                  <AccordionContent className="space-y-4 pt-4">
+                    {state.data.coreConcepts.map((concept, index) => (
+                      <div key={index} className="flex items-start gap-4">
+                        <CheckCircle2 className="h-5 w-5 mt-0.5 shrink-0 text-primary" />
+                        <div>
+                          <h4 className="font-semibold">{concept.concept}</h4>
+                          <p className="text-muted-foreground">{concept.description}</p>
+                        </div>
+                      </div>
+                    ))}
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
