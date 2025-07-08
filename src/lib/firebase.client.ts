@@ -6,12 +6,12 @@ import { getFirestore, type Firestore } from "firebase/firestore";
 // This is for prototyping purposes only.
 // Replace the "YOUR_..." placeholders with your actual Firebase project's web app credentials.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY", // Find this in your Firebase project settings
+  apiKey: "AIzaSyAI4Bq6UdA2W-WVXNOAtWBk2zonuvIpQi0",
   authDomain: "prepai-bcb3d.firebaseapp.com",
   projectId: "prepai-bcb3d",
-  storageBucket: "prepai-bcb3d.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // Find this in your Firebase project settings
-  appId: "YOUR_APP_ID" // Find this in your Firebase project settings
+  storageBucket: "prepai-bcb3d.firebasestorage.app",
+  messagingSenderId: "590593843510",
+  appId: "1:590593843510:web:3307449e1b15500ca35397"
 };
 
 
