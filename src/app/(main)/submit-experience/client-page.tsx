@@ -20,9 +20,11 @@ import { submitExperienceAction } from "./actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
 import { experienceSchema } from "./schema"
+import { useAuth } from "@/contexts/auth-context"
 
 export function ExperienceForm() {
   const { toast } = useToast()
+  const { user } = useAuth()
   
   const form = useForm<z.infer<typeof experienceSchema>>({
     resolver: zodResolver(experienceSchema),
@@ -31,15 +33,26 @@ export function ExperienceForm() {
       college: "",
       cgpa: undefined,
       branch: "",
-      targetCompany: "",
-      onlineRound: "",
-      techRound: "",
-      hrRound: "",
+      company: "",
+      role: "",
+      year: new Date().getFullYear(),
+      round1: "",
+      round2: "",
+      round3: "",
     },
   })
 
   async function onSubmit(values: z.infer<typeof experienceSchema>) {
-    const result = await submitExperienceAction(values);
+    if (!user) {
+        toast({
+            variant: "destructive",
+            title: "Not Authenticated",
+            description: "You must be logged in to submit an experience.",
+        });
+        return;
+    }
+
+    const result = await submitExperienceAction(values, user.uid, user.email || "");
     if(result.success) {
         toast({
             title: "Success!",
@@ -65,123 +78,17 @@ export function ExperienceForm() {
             <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                 <div className="grid md:grid-cols-2 gap-8">
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Name *</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Your full name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="college"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>College *</FormLabel>
-                            <FormControl>
-                                <Input placeholder="Your college name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="cgpa"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>CGPA *</FormLabel>
-                            <FormControl>
-                                <Input type="number" step="0.1" placeholder="e.g. 8.5" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="branch"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Branch *</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g. Computer Science" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
+                    <FormField control={form.control} name="name" render={({ field }) => ( <FormItem> <FormLabel>Name *</FormLabel> <FormControl> <Input placeholder="Your full name" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                    <FormField control={form.control} name="college" render={({ field }) => ( <FormItem> <FormLabel>College *</FormLabel> <FormControl> <Input placeholder="Your college name" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                    <FormField control={form.control} name="branch" render={({ field }) => ( <FormItem> <FormLabel>Branch *</FormLabel> <FormControl> <Input placeholder="e.g. Computer Science" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                    <FormField control={form.control} name="cgpa" render={({ field }) => ( <FormItem> <FormLabel>CGPA *</FormLabel> <FormControl> <Input type="number" step="0.1" placeholder="e.g. 8.5" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                    <FormField control={form.control} name="company" render={({ field }) => ( <FormItem> <FormLabel>Company *</FormLabel> <FormControl> <Input placeholder="e.g. Google" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                    <FormField control={form.control} name="role" render={({ field }) => ( <FormItem> <FormLabel>Role *</FormLabel> <FormControl> <Input placeholder="e.g. Software Engineer Intern" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                    <FormField control={form.control} name="year" render={({ field }) => ( <FormItem> <FormLabel>Placement Year *</FormLabel> <FormControl> <Input type="number" placeholder="e.g. 2024" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
                 </div>
-                <FormField
-                        control={form.control}
-                        name="targetCompany"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Company *</FormLabel>
-                            <FormControl>
-                                <Input placeholder="e.g. Google" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                 <FormField
-                    control={form.control}
-                    name="onlineRound"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Online Assessment</FormLabel>
-                        <FormControl>
-                            <Textarea
-                            placeholder="Describe the online assessment round. What kind of questions were asked?"
-                            className="resize-y"
-                            {...field}
-                            />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="techRound"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Technical Round(s)</FormLabel>
-                        <FormControl>
-                            <Textarea
-                            placeholder="Describe the technical interviews. Topics covered, difficulty level, etc."
-                            className="resize-y"
-                            {...field}
-                            />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="hrRound"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>HR / Managerial Round</FormLabel>
-                        <FormControl>
-                            <Textarea
-                            placeholder="Describe the HR or managerial round. What kind of behavioral questions were asked?"
-                            className="resize-y"
-                            {...field}
-                            />
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                 <FormField control={form.control} name="round1" render={({ field }) => ( <FormItem> <FormLabel>Online Assessment / Round 1</FormLabel> <FormControl> <Textarea placeholder="Describe the first round. What kind of questions were asked?" className="resize-y" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                 <FormField control={form.control} name="round2" render={({ field }) => ( <FormItem> <FormLabel>Technical Round(s) / Round 2</FormLabel> <FormControl> <Textarea placeholder="Describe the technical interviews. Topics covered, difficulty level, etc." className="resize-y" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
+                 <FormField control={form.control} name="round3" render={({ field }) => ( <FormItem> <FormLabel>HR / Managerial Round / Round 3</FormLabel> <FormControl> <Textarea placeholder="Describe the final round. What kind of behavioral questions were asked?" className="resize-y" {...field} /> </FormControl> <FormMessage /> </FormItem> )} />
                 
                 <Button type="submit" disabled={form.formState.isSubmitting}>
                     {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

@@ -1,0 +1,27 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read/write their own profile
+    match /users/{userId} {
+      allow read, update: if request.auth.uid == userId;
+      allow create: if request.auth.uid != null;
+    }
+
+    // Logged-in users can create experiences.
+    // Experiences can be read by anyone.
+    match /experiences/{experienceId} {
+      allow read: if true;
+      allow create: if request.auth.uid == request.resource.data.uid;
+      // Users should not be able to update/delete experiences for now.
+      allow update, delete: if false;
+    }
+
+    // Company data can be read by anyone.
+    // It should only be updated by secure backend processes (like our server action).
+    match /companies/{companyId} {
+      allow read: if true;
+      allow create, write: if false;
+    }
+  }
+}

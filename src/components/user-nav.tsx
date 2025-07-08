@@ -1,3 +1,6 @@
+"use client"
+
+import { useAuth } from "@/contexts/auth-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -9,25 +12,43 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { CreditCard, LogOut, User, Settings } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import { LogOut, Settings, User } from "lucide-react"
+import Link from "next/link"
 
 export function UserNav() {
+  const { user, loading, signOut } = useAuth()
+
+  if (loading) {
+    return <Skeleton className="h-9 w-9 rounded-full" />
+  }
+
+  if (!user) {
+    return (
+      <Link href="/login">
+        <Button variant="outline" size="sm">Login</Button>
+      </Link>
+    )
+  }
+
+  const userInitial = user.displayName ? user.displayName.charAt(0).toUpperCase() : "U";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
-            <AvatarImage src="https://placehold.co/100x100.png" alt="@user" data-ai-hint="user avatar" />
-            <AvatarFallback>U</AvatarFallback>
+            {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || "User"} />}
+            <AvatarFallback>{userInitial}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">Student</p>
+            <p className="text-sm font-medium leading-none">{user.displayName}</p>
             <p className="text-xs leading-none text-muted-foreground">
-              student@example.com
+              {user.email}
             </p>
           </div>
         </DropdownMenuLabel>
@@ -43,7 +64,7 @@ export function UserNav() {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={signOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

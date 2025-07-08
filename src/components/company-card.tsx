@@ -33,7 +33,7 @@ export function CompanyCard({
           alt={`${name} logo`}
           width={48}
           height={48}
-          className="rounded-lg"
+          className="rounded-lg object-contain"
           data-ai-hint={aiHint}
         />
         <div>

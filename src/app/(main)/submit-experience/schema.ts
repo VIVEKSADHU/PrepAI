@@ -13,10 +13,14 @@ export const experienceSchema = z.object({
   branch: z.string().min(2, {
     message: "Branch is required.",
   }),
-  targetCompany: z.string().min(2, {
-    message: "Target company is required.",
+  company: z.string().min(2, {
+    message: "Company name is required.",
   }),
-  onlineRound: z.string().optional(),
-  techRound: z.string().optional(),
-  hrRound: z.string().optional(),
+  role: z.string().min(2, {
+    message: "Role is required.",
+  }),
+  year: z.coerce.number().min(2000, "Invalid year.").max(new Date().getFullYear() + 1, "Invalid year."),
+  round1: z.string().optional().describe("Online Assessment or Round 1"),
+  round2: z.string().optional().describe("Technical Round(s) or Round 2"),
+  round3: z.string().optional().describe("HR/Managerial Round or Round 3"),
 })
