@@ -4,7 +4,7 @@
 import type { ReactNode } from "react"
 import React, { createContext, useContext, useEffect, useState } from "react"
 import type { User } from "firebase/auth"
-import { onAuthStateChanged, signInWithPopup, signOut as firebaseSignOut } from "firebase/auth"
+import { onAuthStateChanged, signInWithRedirect, signOut as firebaseSignOut } from "firebase/auth"
 import { auth, db, googleProvider, isDemoMode } from "@/lib/firebase.client"
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
@@ -89,10 +89,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
     try {
-      await signInWithPopup(auth, googleProvider)
-      // onAuthStateChanged will handle the redirect and user state update
+      // Switched to signInWithRedirect to work in cloud IDEs and restricted environments
+      await signInWithRedirect(auth, googleProvider)
+      // Firebase will handle the redirect. onAuthStateChanged will capture the result when the user returns.
     } catch (error) {
-      console.error("Error signing in with Google: ", error)
+      console.error("Error initiating sign-in with Google: ", error)
       let description = "An unknown error occurred during sign-in. Please check the browser console for more details."
       
       if (error instanceof Error && "code" in error) {
@@ -101,12 +102,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           case 'auth/unauthorized-domain':
             const currentDomain = window.location.hostname;
             description = `This domain (${currentDomain}) is not authorized for Google Sign-In. Please add it to your project's 'Authorized domains' list in the Firebase Console.`;
-            break;
-          case 'auth/popup-blocked':
-            description = "Sign-in popup was blocked by the browser. Please allow popups for this site and try again.";
-            break;
-          case 'auth/popup-closed-by-user':
-            description = "Sign-in was cancelled because the popup was closed. Please try again.";
             break;
           case 'auth/account-exists-with-different-credential':
              description = `An account already exists with the email address ${firebaseError.customData?.email || 'from this provider'}. Please sign in using the method you originally used.`;
