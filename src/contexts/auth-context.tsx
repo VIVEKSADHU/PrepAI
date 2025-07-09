@@ -4,8 +4,14 @@
 import type { ReactNode } from "react"
 import React, { createContext, useContext, useEffect, useState } from "react"
 import type { User } from "firebase/auth"
-import { onAuthStateChanged, signInWithRedirect, signOut as firebaseSignOut } from "firebase/auth"
-import { auth, db, googleProvider, isDemoMode } from "@/lib/firebase.client"
+import {
+  onAuthStateChanged,
+  signOut as firebaseSignOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth"
+import { auth, db, isDemoMode } from "@/lib/firebase.client"
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { slugify } from "@/lib/utils"
@@ -13,7 +19,12 @@ import { slugify } from "@/lib/utils"
 interface AuthContextType {
   user: User | null
   loading: boolean
-  signInWithGoogle: () => Promise<void>
+  signInWithEmail: (email: string, password: string) => Promise<void>
+  signUpWithEmail: (
+    name: string,
+    email: string,
+    password: string
+  ) => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -63,10 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (error) => {
         console.error("Firebase auth error:", error)
         toast({
-            variant: "destructive",
-            title: "Authentication Error",
-            description: "Could not connect to Firebase. Please check your configuration and console for details.",
-        });
+          variant: "destructive",
+          title: "Authentication Error",
+          description:
+            "Could not connect to Firebase. Please check your configuration and console for details.",
+        })
         setLoading(false)
       }
     )
@@ -74,60 +86,107 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe()
   }, [toast])
 
-  const signInWithGoogle = async () => {
+  const signInWithEmail = async (email: string, password: string) => {
     if (isDemoMode) {
-      setLoading(true)
-      // Simulate async action
-      setTimeout(() => {
-        setUser(demoUser)
-        setLoading(false)
+      if (email.toLowerCase() === "demo@example.com") {
+        setLoading(true)
+        setTimeout(() => {
+          setUser(demoUser)
+          setLoading(false)
+          toast({
+            title: "Welcome to Demo Mode!",
+            description: "You are now logged in as a demo user.",
+          })
+        }, 500)
+        return
+      } else {
         toast({
-          title: "Welcome to Demo Mode!",
-          description: "You are now logged in as a demo user.",
+          variant: "destructive",
+          title: "Invalid Demo Credentials",
+          description: `Please use "demo@example.com" to log in while in demo mode.`,
         })
-      }, 500)
-      return
-    }
-    try {
-      // Switched to signInWithRedirect to work in cloud IDEs and restricted environments
-      await signInWithRedirect(auth, googleProvider)
-      // Firebase will handle the redirect. onAuthStateChanged will capture the result when the user returns.
-    } catch (error) {
-      console.error("Error initiating sign-in with Google: ", error)
-      let description = "An unknown error occurred during sign-in. Please check the browser console for more details."
-      
-      if (error instanceof Error && "code" in error) {
-        const firebaseError = error as { code: string; customData?: { email?: string } };
-        switch (firebaseError.code) {
-          case 'auth/unauthorized-domain':
-            const currentDomain = window.location.hostname;
-            description = `This domain (${currentDomain}) is not authorized for Google Sign-In. Please add it to your project's 'Authorized domains' list in the Firebase Console.`;
-            break;
-          case 'auth/account-exists-with-different-credential':
-             description = `An account already exists with the email address ${firebaseError.customData?.email || 'from this provider'}. Please sign in using the method you originally used.`;
-             break;
-           case 'auth/invalid-api-key':
-             description = "Your Firebase API key appears to be invalid. Please check your configuration in `src/lib/firebase.client.ts`.";
-             break;
-          default:
-            // Keep the generic message for other errors
-            break;
-        }
+        throw new Error("Invalid demo credentials")
       }
-      
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
+    } catch (error: any) {
+      let description = "An unknown error occurred. Please try again."
+      if (
+        error.code === "auth/user-not-found" ||
+        error.code === "auth/wrong-password" ||
+        error.code === "auth/invalid-credential"
+      ) {
+        description = "Invalid email or password. Please try again."
+      } else if (error.code === "auth/invalid-api-key") {
+        description =
+          "Your Firebase API key appears to be invalid. Please check your configuration in `src/lib/firebase.client.ts`."
+      }
       toast({
         variant: "destructive",
         title: "Sign In Failed",
         description,
-        duration: 9000
       })
+      throw error
+    }
+  }
+
+  const signUpWithEmail = async (
+    name: string,
+    email: string,
+    password: string
+  ) => {
+    if (isDemoMode) {
+      toast({
+        title: "Demo Mode",
+        description: "Account creation is disabled in demo mode.",
+      })
+      return
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      )
+      const user = userCredential.user
+
+      // Update profile and local state
+      await updateProfile(user, { displayName: name })
+      setUser((prevUser) => (prevUser ? { ...prevUser, ...user } : user))
+
+      // Create user document in Firestore
+      const userRef = doc(db, "users", user.uid)
+      await setDoc(userRef, {
+        uid: user.uid,
+        name: name,
+        email: user.email,
+        college: "",
+        branch: "",
+        savedCompanies: [],
+        createdAt: serverTimestamp(),
+      })
+    } catch (error: any) {
+      let description = "An unknown error occurred. Please try again."
+      if (error.code === "auth/email-already-in-use") {
+        description = "This email is already registered. Please sign in."
+      } else if (error.code === "auth/weak-password") {
+        description = "Password should be at least 6 characters."
+      }
+      toast({
+        variant: "destructive",
+        title: "Sign Up Failed",
+        description,
+      })
+      throw error
     }
   }
 
   const signOut = async () => {
     if (isDemoMode) {
       setLoading(true)
-      // Simulate async action
       setTimeout(() => {
         setUser(null)
         setLoading(false)
@@ -150,7 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const value = { user, loading, signInWithGoogle, signOut }
+  const value = { user, loading, signInWithEmail, signUpWithEmail, signOut }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

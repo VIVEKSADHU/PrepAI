@@ -20,11 +20,12 @@ import { Building2, Loader2, AlertTriangle } from "lucide-react"
 import { isDemoMode } from "@/lib/firebase.client"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
-export default function LoginPage() {
-  const { user, loading, signInWithEmail } = useAuth()
+export default function SignupPage() {
+  const { user, loading, signUpWithEmail } = useAuth()
   const router = useRouter()
-  const [email, setEmail] = useState(isDemoMode ? "demo@example.com" : "")
-  const [password, setPassword] = useState(isDemoMode ? "demopassword" : "")
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -39,17 +40,13 @@ export default function LoginPage() {
     setError(null)
     setIsSubmitting(true)
     try {
-      await signInWithEmail(email, password)
+      await signUpWithEmail(name, email, password)
+      // Successful signup will trigger the useEffect above to redirect.
     } catch (err: any) {
       setError(
         err.message || "An unexpected error occurred. Please try again."
       )
       setIsSubmitting(false)
-    }
-    // On success, the useEffect hook will handle redirection.
-    // On failure, the toast in the context will show the error, and we stop the spinner.
-    if (router.pathname === "/login") {
-        setIsSubmitting(false);
     }
   }
 
@@ -68,9 +65,9 @@ export default function LoginPage() {
           <Building2 className="h-8 w-8" />
           <span className="text-2xl font-bold">PrepAI</span>
         </div>
-        <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+        <CardTitle className="text-2xl font-bold">Create an Account</CardTitle>
         <CardDescription>
-          Sign in to access your dashboard and resources.
+          Enter your details below to get started.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -79,11 +76,23 @@ export default function LoginPage() {
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Demo Mode is Active</AlertTitle>
             <AlertDescription>
-              Use <b>demo@example.com</b> and any password to continue.
+              Account creation is disabled. Please use the login page to
+              continue as a demo user.
             </AlertDescription>
           </Alert>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input
+              id="name"
+              placeholder="John Doe"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              disabled={isDemoMode}
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -93,6 +102,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={isDemoMode}
             />
           </div>
           <div className="space-y-2">
@@ -104,25 +114,30 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={isDemoMode}
             />
           </div>
-          <Button type="submit" disabled={isSubmitting} className="w-full">
+          <Button
+            type="submit"
+            disabled={isSubmitting || isDemoMode}
+            className="w-full"
+          >
             {isSubmitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "Sign In"
+              "Sign Up"
             )}
           </Button>
         </form>
       </CardContent>
       <CardFooter>
         <p className="w-full text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          Already have an account?{" "}
           <Link
-            href="/signup"
+            href="/login"
             className="font-medium text-primary hover:underline"
           >
-            Sign Up
+            Sign In
           </Link>
         </p>
       </CardFooter>

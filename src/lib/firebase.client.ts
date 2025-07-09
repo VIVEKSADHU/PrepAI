@@ -1,6 +1,7 @@
+
 // src/lib/firebase.client.ts
 import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
+import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -41,7 +42,6 @@ if (isDemoMode && typeof window !== 'undefined') {
 let app: FirebaseApp;
 let auth: Auth;
 let db: Firestore;
-let googleProvider: GoogleAuthProvider;
 
 if (isDemoMode) {
   // In demo mode, we don't initialize Firebase to avoid errors.
@@ -49,12 +49,10 @@ if (isDemoMode) {
   app = {} as FirebaseApp;
   auth = {} as Auth;
   db = {} as Firestore;
-  googleProvider = {} as GoogleAuthProvider;
 } else {
   app = getApps().length ? getApp() : initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
-  googleProvider = new GoogleAuthProvider();
 }
 
-export { app, auth, db, googleProvider };
+export { app, auth, db };
