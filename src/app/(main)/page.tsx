@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { collection, getDocs, orderBy, query } from "firebase/firestore"
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore"
 import { CompanyCard } from "@/components/company-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -40,30 +40,25 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function getCompanies(): Promise<void> {
-      if (isDemoMode) {
-        setCompanies(mockCompanies);
-        setLoading(false);
-        return;
-      }
-      
-      // This check is important
-      if (!db) {
-        setLoading(false);
-        setCompanies([]);
-        return;
-      }
+    if (isDemoMode) {
+      setCompanies(mockCompanies);
+      setLoading(false);
+      return;
+    }
+    
+    if (!db) {
+      setLoading(false);
+      setCompanies([]);
+      return;
+    }
 
-      try {
-        const companiesRef = collection(db, "companies")
-        const q = query(companiesRef, orderBy("name", "asc"))
-        const querySnapshot = await getDocs(q)
+    const companiesRef = collection(db, "companies")
+    const q = query(companiesRef, orderBy("name", "asc"))
 
-        if (querySnapshot.empty) {
-          setCompanies([])
-          return
-        }
-
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      if (querySnapshot.empty) {
+        setCompanies([])
+      } else {
         const companiesData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           name: doc.data().name,
@@ -73,16 +68,15 @@ export default function DashboardPage() {
           aiHint: doc.data().aiHint || "company building",
         }))
         setCompanies(companiesData)
-      } catch (error) {
-        console.error("Error fetching companies:", error)
-        // In case of error (e.g., permissions), we'll show no companies.
-        setCompanies([])
-      } finally {
-        setLoading(false)
       }
-    }
-
-    getCompanies()
+      setLoading(false)
+    }, (error) => {
+      console.error("Error fetching companies in real-time:", error)
+      setCompanies([])
+      setLoading(false)
+    });
+    
+    return () => unsubscribe();
   }, [])
 
   return (
