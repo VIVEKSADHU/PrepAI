@@ -111,6 +111,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           case 'auth/account-exists-with-different-credential':
              description = `An account already exists with the email address ${firebaseError.customData?.email || 'from this provider'}. Please sign in using the method you originally used.`;
              break;
+           case 'auth/invalid-api-key':
+             description = "Your Firebase API key appears to be invalid. Please check your configuration in `src/lib/firebase.client.ts`.";
+             break;
           default:
             // Keep the generic message for other errors
             break;
