@@ -1,3 +1,4 @@
+
 "use client"
 
 import type { ReactNode } from "react"
@@ -91,11 +92,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await signInWithRedirect(auth, googleProvider)
     } catch (error) {
       console.error("Error signing in with Google: ", error)
+      let description =
+        "Could not sign in with Google. Check console for details."
+      if (
+        error instanceof Error &&
+        "code" in error &&
+        (error as { code: string }).code === "auth/unauthorized-domain"
+      ) {
+        description =
+          "This domain is not authorized. Please add it to your Firebase project's 'Authorized domains' list in the Authentication settings."
+      }
       toast({
         variant: "destructive",
         title: "Sign In Error",
-        description:
-          "Could not sign in with Google. Check console for details.",
+        description,
       })
     }
   }

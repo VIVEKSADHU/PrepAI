@@ -4,13 +4,14 @@ import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD8hK2EXAMPLEKEYDOREPLACE",
+  apiKey: "AIzaSyAI4Bq6UdA2W-WVXNOAtWBk2zonuvIpQi0",
   authDomain: "prepai-bcb3d.firebaseapp.com",
   projectId: "prepai-bcb3d",
-  storageBucket: "prepai-bcb3d.appspot.com",
-  messagingSenderId: "43135287829",
-  appId: "1:43135287829:web:abcdefg1234567"
+  storageBucket: "prepai-bcb3d.firebasestorage.app",
+  messagingSenderId: "590593843510",
+  appId: "1:590593843510:web:3307449e1b15500ca35397"
 };
+
 
 const hasPlaceholder = Object.values(firebaseConfig).some(
   (value) => value.includes("EXAMPLEKEYDOREPLACE") || value.includes("abcdefg1234567")
