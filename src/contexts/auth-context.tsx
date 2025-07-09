@@ -92,20 +92,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await signInWithRedirect(auth, googleProvider)
     } catch (error) {
       console.error("Error signing in with Google: ", error)
-      let description =
-        "Could not sign in with Google. Check console for details."
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        (error as { code: string }).code === "auth/unauthorized-domain"
-      ) {
-        description =
-          "This domain is not authorized. Please add it to your Firebase project's 'Authorized domains' list in the Authentication settings."
+      let description = "An unknown error occurred during sign-in. Please check the browser console for more details."
+      
+      if (error instanceof Error && "code" in error) {
+        const firebaseError = error as { code: string };
+        if (firebaseError.code === "auth/unauthorized-domain") {
+            const currentDomain = window.location.hostname;
+            console.log(`The application is running on domain: ${currentDomain}. This needs to be authorized in Firebase.`);
+            description = `This domain (${currentDomain}) is not authorized. Please add '${currentDomain}' to your project's 'Authorized domains' list in the Firebase Console (Authentication > Settings) and try again.`
+        } else if (firebaseError.code === 'auth/popup-blocked-by-browser') {
+            description = "Sign-in popup was blocked by the browser. Please allow popups for this site and try again.";
+        }
       }
+      
       toast({
         variant: "destructive",
         title: "Sign In Error",
         description,
+        duration: 9000
       })
     }
   }
