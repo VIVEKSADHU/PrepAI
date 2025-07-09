@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -24,32 +25,24 @@ const GeneratePrepRoadmapInputSchema = z.object({
 export type GeneratePrepRoadmapInput = z.infer<typeof GeneratePrepRoadmapInputSchema>;
 
 const GeneratePrepRoadmapOutputSchema = z.object({
-  roadmap: z
-    .array(
-      z.object({
-        day: z.number().describe('The day number in the roadmap (e.g., 1, 2, 3).'),
-        title: z.string().describe('The main focus for the day.'),
-        tasks: z.array(z.string()).describe('A list of specific tasks or topics for the day.'),
-      })
-    )
-    .describe('A personalized 30-day roadmap for interview preparation, broken down day-by-day.'),
-  frequentlyAskedQuestions: z
-    .array(
-      z.object({
-        question: z.string().describe('The interview question.'),
-        answer: z.string().describe('A concise answer or approach to the question.'),
-      })
-    )
-    .describe('A list of the most frequently asked interview questions with answers.'),
-  coreConcepts: z
-    .array(
-      z.object({
-        concept: z.string().describe('The name of the core concept.'),
-        description: z.string().describe('A brief explanation of the concept and its importance.'),
-      })
-    )
-    .describe('A list of core concepts to study for the interview.'),
+  reasoning: z.string().describe("The AI's reasoning for the provided timeline and steps, explaining why this path was chosen based on the user's profile and real data."),
+  estimatedTimeline: z.string().describe("The total estimated time to prepare for the role, e.g., '3 months', '1 year'."),
+  successProbability: z.string().describe("An honest assessment of the success probability, what it depends on, and how to improve it."),
+  keyMilestones: z.array(
+    z.object({
+      milestone: z.string().describe("A key milestone in the roadmap, e.g., 'Build 2-3 Core Projects' or 'Secure an Internship'."),
+      targetDate: z.string().describe("A target date or timeframe for the milestone, e.g., 'Month 1-2' or 'Q3 2024'."),
+    })
+  ).describe("A list of high-level, key milestones with their target dates."),
+  roadmapBreakdown: z.array(
+    z.object({
+      period: z.string().describe("The time period for this section of the roadmap, e.g., 'Months 1-3'."),
+      title: z.string().describe("A descriptive title for the tasks in this period, e.g., 'Skill Foundation'"),
+      tasks: z.array(z.string()).describe("A list of specific tasks, skills to learn, or topics for this period."),
+    })
+  ).describe("A detailed, period-by-period breakdown of the preparation plan."),
 });
+
 
 export type GeneratePrepRoadmapOutput = z.infer<typeof GeneratePrepRoadmapOutputSchema>;
 
@@ -66,28 +59,25 @@ const prompt = ai.definePrompt({
   name: 'generatePrepRoadmapPrompt',
   input: {schema: PromptWithContextSchema},
   output: {schema: GeneratePrepRoadmapOutputSchema},
-  prompt: `You are a career guidance assistant. Based on the candidate’s inputs and past experience data, generate a realistic and relevant 30-day preparation roadmap.
+  prompt: `You are a career roadmap planner AI.
 
-Also generate a list of frequently asked questions and core concepts based on the provided information. The entire output must be in a structured JSON format according to the output schema.
+Generate a **realistic, personalized roadmap** to help the student achieve their goal of getting into: {{{targetCompany}}}
+Role: {{{role}}}
+College: {{{college}}}
+CGPA: {{{cgpa}}}
+Branch: {{{branch}}}
 
-🧑 Candidate Details:
-- Target Role: {{{role}}}
-- College: {{{college}}}
-- CGPA: {{{cgpa}}}
-- Background: {{{branch}}}
-
-📊 Firestore Experience Summary:
-Here are real experiences from students of the same or similar college and CGPA applying for {{{role}}}:
+📚 You also have access to **real experiences** of students with similar profiles who applied to or got selected at {{{targetCompany}}}:
 {{{summarizedExperienceData}}}
 
-🧭 Rules:
-1. ONLY generate a roadmap that is realistically achievable for the selected role.
-2. If the target role is non-technical (e.g., Doctor), DO NOT include technical topics like DSA or Leetcode.
-3. Prioritize tasks that match real-world expectations and the student's actual background.
-4. The roadmap must be personalized — e.g., lower CGPA should focus more on building practical experience, while higher CGPA can target elite companies.
+🧠 Instructions:
+1. DO NOT assume everyone can crack {{{targetCompany}}} in 30 days. Use real experiences to judge feasibility.
+2. Based on the user's background, generate a roadmap that could take **15 days**, **3 months**, or even **1 year** — whatever is honest and achievable.
+3. If the gap is big (e.g., student from Tier 3 college, 6.5 CGPA, no projects), break the roadmap into **milestones** (e.g., internship → project → switch).
+4. Explain your reasoning — why this timeline and these steps.
+5. Include skill-building, networking, project suggestions, and realistic prep timelines (not just DSA).
 
-🎯 Output Format:
-Your output MUST conform to the JSON schema. Generate a day-wise roadmap for 30 days with clear action steps, a list of frequently asked questions with answers, and a list of core concepts to study.
+🎯 Your output MUST conform to the JSON schema, including all fields.
   `,
 });
 
@@ -111,7 +101,7 @@ const generatePrepRoadmapFlow = ai.defineFlow(
     let summarizedExperienceData = "No past experiences found for this company. Your generated plan should be based on general knowledge for this role.";
     if (experiences.length > 0) {
         summarizedExperienceData = experiences.map(exp => {
-            return `Student from ${exp.college} (CGPA: ${exp.cgpa}) applied for ${exp.role}.\nExperience:\n- Round 1: ${exp.round1 || 'N/A'}\n- Round 2: ${exp.round2 || 'N/A'}\n- Round 3: ${exp.round3 || 'N/A'}`;
+            return `Student from ${exp.college} (CGPA: ${exp.cgpa}, Branch: ${exp.branch}) applied for ${exp.role}.\nExperience:\n- Round 1: ${exp.round1 || 'N/A'}\n- Round 2: ${exp.round2 || 'N/A'}\n- Round 3: ${exp.round3 || 'N/A'}`;
         }).join('\n\n---\n\n');
     }
 

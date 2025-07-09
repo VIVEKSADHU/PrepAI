@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useFormStatus } from "react-dom"
@@ -19,7 +20,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { Bot, BrainCircuit, CalendarDays, CheckCircle2, HelpCircle, Loader2, Sparkles } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Bot, Clock, Rocket, ShieldCheck, Sparkles, Target, Loader2, ListChecks } from "lucide-react"
 import { useEffect, useActionState } from "react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -143,88 +145,88 @@ export function AiMentorClientPage() {
       </div>
       <div className="lg:col-span-2">
         {state.data ? (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                 <div className="p-2 bg-primary/10 rounded-md">
-                     <Bot className="h-6 w-6 text-primary" />
-                 </div>
-                <div>
-                <CardTitle className="font-headline">Your Personalized Roadmap</CardTitle>
-                <CardDescription>
-                  Powered by Gemini AI. Follow this plan to crack your dream company.
-                </CardDescription>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                   <div className="p-2 bg-primary/10 rounded-md">
+                       <Bot className="h-6 w-6 text-primary" />
+                   </div>
+                  <div>
+                  <CardTitle className="font-headline">Your Personalized Career Roadmap</CardTitle>
+                  <CardDescription>
+                    Powered by Gemini AI. Here's a realistic plan to help you achieve your goals.
+                  </CardDescription>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Accordion type="single" collapsible defaultValue="item-1" className="w-full">
-                <AccordionItem value="item-1">
-                  <AccordionTrigger className="text-lg font-semibold">
-                    <CalendarDays className="inline-block mr-2" />
-                    30-Day Preparation Roadmap
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="relative pl-6 pt-4">
-                      <div className="absolute left-[7px] top-2 h-full w-0.5 bg-border" />
-                      {state.data.roadmap.map((day, index) => (
-                        <div key={index} className="relative mb-8 pl-8">
-                          <div className="absolute -left-1.5 top-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">
-                            {day.day}
-                          </div>
-                          <div className="pl-4">
-                            <h4 className="font-semibold text-primary-foreground/90">{day.title}</h4>
-                            <ul className="mt-2 list-disc list-inside space-y-1.5 text-muted-foreground">
-                              {day.tasks.map((task, taskIndex) => (
-                                <li key={taskIndex}>{task}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-2">
-                  <AccordionTrigger className="text-lg font-semibold">
-                    <HelpCircle className="inline-block mr-2" />
-                    Frequently Asked Questions
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <Accordion type="single" collapsible className="w-full space-y-2 pt-2">
-                      {state.data.frequentlyAskedQuestions.map((faq, index) => (
-                        <AccordionItem value={`faq-${index}`} key={index} className="rounded-md border bg-background/50 px-4 data-[state=open]:bg-accent/50">
-                          <AccordionTrigger className="py-3 text-left hover:no-underline">
-                            {faq.question}
-                          </AccordionTrigger>
-                          <AccordionContent className="pt-2 pb-4 text-muted-foreground">
-                            {faq.answer}
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-3">
-                  <AccordionTrigger className="text-lg font-semibold">
-                    <BrainCircuit className="inline-block mr-2" />
-                    Core Concepts to Study
-                  </AccordionTrigger>
-                  <AccordionContent className="space-y-4 pt-4">
-                    {state.data.coreConcepts.map((concept, index) => (
+              </CardHeader>
+              <CardContent className="space-y-6">
+                 <Alert>
+                    <Sparkles className="h-4 w-4" />
+                    <AlertTitle>AI Reasoning</AlertTitle>
+                    <AlertDescription>
+                     {state.data.reasoning}
+                    </AlertDescription>
+                  </Alert>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Card>
+                      <CardHeader className="flex-row items-center gap-4 space-y-0 pb-2">
+                        <Clock className="h-6 w-6 text-muted-foreground" />
+                        <CardTitle className="text-lg">Estimated Timeline</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-2xl font-bold">{state.data.estimatedTimeline}</p>
+                      </CardContent>
+                    </Card>
+                     <Card>
+                      <CardHeader className="flex-row items-center gap-4 space-y-0 pb-2">
+                        <ShieldCheck className="h-6 w-6 text-muted-foreground" />
+                        <CardTitle className="text-lg">Success Probability</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">{state.data.successProbability}</p>
+                      </CardContent>
+                    </Card>
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center"><Rocket className="mr-2 h-5 w-5 text-primary"/>Key Milestones</h3>
+                  <div className="space-y-4">
+                    {state.data.keyMilestones.map((milestone, index) => (
                       <div key={index} className="flex items-start gap-4">
-                        <CheckCircle2 className="h-5 w-5 mt-0.5 shrink-0 text-primary" />
+                        <Target className="h-5 w-5 mt-1 shrink-0 text-primary/80" />
                         <div>
-                          <h4 className="font-semibold">{concept.concept}</h4>
-                          <p className="text-muted-foreground">{concept.description}</p>
+                          <p className="font-semibold">{milestone.milestone}</p>
+                          <p className="text-sm text-muted-foreground">{milestone.targetDate}</p>
                         </div>
                       </div>
                     ))}
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </CardContent>
-          </Card>
+                  </div>
+                </div>
+
+                <div>
+                   <h3 className="text-lg font-semibold mb-2 flex items-center"><ListChecks className="mr-2 h-5 w-5 text-primary"/>Detailed Breakdown</h3>
+                  <Accordion type="single" collapsible defaultValue="item-0" className="w-full">
+                     {state.data.roadmapBreakdown.map((item, index) => (
+                        <AccordionItem value={`item-${index}`} key={index}>
+                           <AccordionTrigger className="text-base font-semibold">
+                             <span className="text-primary mr-3">{item.period}:</span> {item.title}
+                          </AccordionTrigger>
+                          <AccordionContent>
+                             <ul className="list-disc list-inside space-y-2 pl-2 text-muted-foreground">
+                               {item.tasks.map((task, taskIndex) => (
+                                <li key={taskIndex}>{task}</li>
+                              ))}
+                             </ul>
+                          </AccordionContent>
+                        </AccordionItem>
+                      ))}
+                  </Accordion>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           <div className="flex h-full items-center justify-center rounded-lg border border-dashed">
             <div className="text-center">
