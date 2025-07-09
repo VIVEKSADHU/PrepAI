@@ -5,8 +5,8 @@ import { collection, onSnapshot, orderBy, query } from "firebase/firestore"
 import { CompanyCard } from "@/components/company-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { db } from "@/lib/firebase.client"
-import { Terminal } from "lucide-react"
+import { db, isDemoMode } from "@/lib/firebase.client"
+import { Terminal, AlertTriangle } from "lucide-react"
 import { slugify } from "@/lib/utils"
 
 type CompanyData = {
@@ -17,6 +17,13 @@ type CompanyData = {
   avgCGPA: number
   aiHint?: string
 }
+
+const mockCompanies: CompanyData[] = [
+    { id: '1', name: 'Innovate Corp', logoURL: `https://avatar.vercel.sh/${slugify("Innovate Corp")}.png?size=96`, numExperiences: 10, avgCGPA: 8.5, aiHint: 'office building' },
+    { id: '2', name: 'QuantumLeap', logoURL: `https://avatar.vercel.sh/${slugify("QuantumLeap")}.png?size=96`, numExperiences: 5, avgCGPA: 7.9, aiHint: 'tech office' },
+    { id: '3', name: 'Stellar Solutions', logoURL: `https://avatar.vercel.sh/${slugify("Stellar Solutions")}.png?size=96`, numExperiences: 12, avgCGPA: 9.1, aiHint: 'software company' },
+    { id: '4', name: 'Nexus Enterprises', logoURL: `https://avatar.vercel.sh/${slugify("Nexus Enterprises")}.png?size=96`, numExperiences: 8, avgCGPA: 8.2, aiHint: 'modern architecture' },
+]
 
 function DashboardSkeleton() {
   return (
@@ -34,6 +41,12 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isDemoMode) {
+      setCompanies(mockCompanies);
+      setLoading(false);
+      return;
+    }
+
     const companiesRef = collection(db, "companies")
     const q = query(companiesRef, orderBy("name", "asc"))
 
@@ -73,6 +86,16 @@ export default function DashboardPage() {
           Explore student experiences from various companies.
         </p>
       </div>
+
+       {isDemoMode && (
+          <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Demo Mode</AlertTitle>
+              <AlertDescription>
+                You are viewing mock data. Please configure your Firebase credentials in <code>src/lib/firebase.client.ts</code> to see live data.
+              </AlertDescription>
+          </Alert>
+      )}
 
        {error && (
           <Alert variant="destructive">

@@ -16,15 +16,17 @@ const hasPlaceholder = Object.values(firebaseConfig).some(
   (value) => value.includes("EXAMPLEKEYDOREPLACE") || value.includes("abcdefg1234567")
 );
 
-if (hasPlaceholder && typeof window !== 'undefined') {
+export const isDemoMode = hasPlaceholder;
+
+if (isDemoMode && typeof window !== 'undefined') {
   console.warn(`
     ====================================================================================================
-    FIREBASE CONFIGURATION NEEDED
+    FIREBASE CONFIGURATION NEEDED (DEMO MODE ACTIVE)
     ====================================================================================================
     Your Firebase configuration in 'src/lib/firebase.client.ts' contains placeholder values.
-    The app will not function correctly until you replace them.
+    The app is running in DEMO MODE with mock data.
     
-    To fix this:
+    To fix this and use your own database:
     1. Go to your Firebase project console: https://console.firebase.google.com/
     2. Select your project ('prepai-bcb3d').
     3. Go to Project Settings (gear icon) > 'Your apps' card.
@@ -34,11 +36,24 @@ if (hasPlaceholder && typeof window !== 'undefined') {
   `);
 }
 
-// Initialize Firebase
-const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const auth: Auth = getAuth(app);
-const db: Firestore = getFirestore(app);
-const googleProvider: GoogleAuthProvider = new GoogleAuthProvider();
+// Conditionally initialize Firebase
+let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
+let googleProvider: GoogleAuthProvider;
 
+if (isDemoMode) {
+  // In demo mode, we don't initialize Firebase to avoid errors.
+  // We create mock objects to prevent the app from crashing.
+  app = {} as FirebaseApp;
+  auth = {} as Auth;
+  db = {} as Firestore;
+  googleProvider = {} as GoogleAuthProvider;
+} else {
+  app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+  googleProvider = new GoogleAuthProvider();
+}
 
 export { app, auth, db, googleProvider };
