@@ -12,46 +12,33 @@ const firebaseConfig = {
   appId: "1:43135287829:web:abcdefg1234567"
 };
 
-// This check determines if the app is in demo mode.
-export const isDemoMode = firebaseConfig.apiKey.includes("EXAMPLEKEYDOREPLACE") || firebaseConfig.appId.includes("abcdefg1234567");
+const hasPlaceholder = Object.values(firebaseConfig).some(
+  (value) => value.includes("EXAMPLEKEYDOREPLACE") || value.includes("abcdefg1234567")
+);
 
-if (isDemoMode) {
+if (hasPlaceholder && typeof window !== 'undefined') {
   console.warn(`
     ====================================================================================================
-    FIREBASE IS IN DEMO MODE
+    FIREBASE CONFIGURATION NEEDED
     ====================================================================================================
     Your Firebase configuration in 'src/lib/firebase.client.ts' contains placeholder values.
-    The app is running in Demo Mode with mock data. Authentication and database features are disabled.
+    The app will not function correctly until you replace them.
     
-    To enable full functionality, you MUST replace the placeholder values with your
-    actual Firebase project's web app credentials.
-    
-    How to fix:
+    To fix this:
     1. Go to your Firebase project console: https://console.firebase.google.com/
     2. Select your project ('prepai-bcb3d').
-    3. Go to Project Settings (gear icon).
-    4. In the 'General' tab, scroll down to the 'Your apps' section.
-    5. Select your web app and find the 'SDK setup and configuration' with the 'Config' option selected.
-    6. Copy the values (apiKey, authDomain, etc.) and paste them into the 'firebaseConfig' object
-       in this file ('src/lib/firebase.client.ts').
+    3. Go to Project Settings (gear icon) > 'Your apps' card.
+    4. Find your web app's 'SDK setup and configuration' and select 'Config'.
+    5. Copy the config object values into the 'firebaseConfig' object in this file.
     ====================================================================================================
   `);
 }
 
+// Initialize Firebase
+const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth: Auth = getAuth(app);
+const db: Firestore = getFirestore(app);
+const googleProvider: GoogleAuthProvider = new GoogleAuthProvider();
 
-// Conditionally initialize Firebase
-let app: FirebaseApp;
-let auth: Auth | null = null;
-let db: Firestore | null = null;
-let googleProvider: GoogleAuthProvider | null = null;
-
-if (!isDemoMode) {
-  app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  googleProvider = new GoogleAuthProvider();
-} else {
-  app = {} as FirebaseApp; // Provide a mock app object in demo mode
-}
 
 export { app, auth, db, googleProvider };

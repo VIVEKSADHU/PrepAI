@@ -23,9 +23,6 @@ type ActionResponse = {
 }
 
 async function updateCompanyData(companyName: string) {
-  // This check is important for server actions.
-  if (!db) return;
-  
   const companyRef = doc(db, "companies", companyName)
 
   const allExperiencesQuery = query(
@@ -88,11 +85,6 @@ export async function submitExperienceAction(
   uid: string,
   email: string
 ): Promise<ActionResponse> {
-  // This check is important for server actions.
-  if (!db) {
-    return { success: false, message: "Database not configured. Form submission is disabled." }
-  }
-
   const validatedFields = experienceSchema.safeParse(data)
   if (!validatedFields.success) {
     return { success: false, message: "Invalid data provided." }
@@ -117,6 +109,14 @@ export async function submitExperienceAction(
     }
   } catch (error) {
     console.error("Error submitting experience: ", error)
-    return { success: false, message: "An unexpected error occurred while submitting." }
+    let message = "An unexpected error occurred. Please check your Firebase configuration and try again.";
+    if (error instanceof Error) {
+        if (error.message.includes('permission-denied')) {
+            message = "Submission failed: Permission denied. Please check your Firestore security rules.";
+        } else if (error.message.includes('invalid-api-key')) {
+             message = "Submission failed: Your Firebase API key appears to be invalid.";
+        }
+    }
+    return { success: false, message }
   }
 }

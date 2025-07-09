@@ -5,7 +5,7 @@ import { collection, onSnapshot, orderBy, query } from "firebase/firestore"
 import { CompanyCard } from "@/components/company-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { db, isDemoMode } from "@/lib/firebase.client"
+import { db } from "@/lib/firebase.client"
 import { Terminal } from "lucide-react"
 import { slugify } from "@/lib/utils"
 
@@ -17,13 +17,6 @@ type CompanyData = {
   avgCGPA: number
   aiHint?: string
 }
-
-const mockCompanies: CompanyData[] = [
-    { id: "1", name: "Innovate Inc.", logoURL: `https://avatar.vercel.sh/${slugify("Innovate Inc.")}.png?size=96`, numExperiences: 42, avgCGPA: 8.7, aiHint: "office building" },
-    { id: "2", name: "QuantumLeap", logoURL: `https://avatar.vercel.sh/${slugify("QuantumLeap")}.png?size=96`, numExperiences: 15, avgCGPA: 9.1, aiHint: "tech startup" },
-    { id: "3", name: "DataWeavers", logoURL: `https://avatar.vercel.sh/${slugify("DataWeavers")}.png?size=96`, numExperiences: 28, avgCGPA: 8.2, aiHint: "data center" },
-    { id: "4", name: "Synergy Corp", logoURL: `https://avatar.vercel.sh/${slugify("Synergy Corp")}.png?size=96`, numExperiences: 50, avgCGPA: 8.5, aiHint: "corporate building" },
-]
 
 function DashboardSkeleton() {
   return (
@@ -38,20 +31,9 @@ function DashboardSkeleton() {
 export default function DashboardPage() {
   const [companies, setCompanies] = useState<CompanyData[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isDemoMode) {
-      setCompanies(mockCompanies);
-      setLoading(false);
-      return;
-    }
-    
-    if (!db) {
-      setLoading(false);
-      setCompanies([]);
-      return;
-    }
-
     const companiesRef = collection(db, "companies")
     const q = query(companiesRef, orderBy("name", "asc"))
 
@@ -69,9 +51,11 @@ export default function DashboardPage() {
         }))
         setCompanies(companiesData)
       }
+      setError(null);
       setLoading(false)
     }, (error) => {
       console.error("Error fetching companies in real-time:", error)
+      setError("Could not fetch company data. Please check your Firebase configuration and security rules.");
       setCompanies([])
       setLoading(false)
     });
@@ -90,16 +74,12 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {isDemoMode && (
-          <Alert>
+       {error && (
+          <Alert variant="destructive">
               <Terminal className="h-4 w-4" />
-              <AlertTitle>Demo Mode</AlertTitle>
+              <AlertTitle>Database Error</AlertTitle>
               <AlertDescription>
-                This is a demo. Company data is mocked. Please configure your Firebase credentials in 
-                <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold mx-1">
-                  src/lib/firebase.client.ts
-                </code> 
-                to connect to your own database.
+                {error}
               </AlertDescription>
           </Alert>
       )}
@@ -119,19 +99,16 @@ export default function DashboardPage() {
             />
           ))}
         </div>
-      ) : (
+      ) : !error ? (
         <div className="flex items-center justify-center h-64 rounded-lg border border-dashed">
           <div className="text-center">
             <h3 className="text-lg font-semibold">No companies found</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              {isDemoMode 
-                ? "This is where your company data will appear."
-                : "Could not load company data or no experiences have been submitted yet."
-              }
+              No experiences have been submitted yet. Be the first!
             </p>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

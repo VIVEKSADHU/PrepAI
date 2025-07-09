@@ -4,17 +4,9 @@ import type { ReactNode } from "react"
 import React, { createContext, useContext, useEffect, useState } from "react"
 import type { User } from "firebase/auth"
 import { onAuthStateChanged, signInWithRedirect, signOut as firebaseSignOut } from "firebase/auth"
-import { auth, db, googleProvider, isDemoMode } from "@/lib/firebase.client"
+import { auth, db, googleProvider } from "@/lib/firebase.client"
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
-
-// Create a mock user for demo mode
-const demoUser = {
-    uid: "demo-user-uid",
-    email: "demo@example.com",
-    displayName: "Demo User",
-    photoURL: "https://avatar.vercel.sh/demo-user.png?size=96",
-} as User;
 
 interface AuthContextType {
   user: User | null
@@ -31,55 +23,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast()
 
   useEffect(() => {
-    if (isDemoMode) {
-        setUser(demoUser);
-        setLoading(false);
-        return;
-    }
-
-    // This check is important to prevent errors if auth is null
-    if (!auth) {
-        setLoading(false);
-        return;
-    }
-
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         setUser(user)
-        // This check is important to prevent errors if db is null
-        if(db) {
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef);
-            if (!userSnap.exists()) {
-              await setDoc(userRef, {
-                uid: user.uid,
-                name: user.displayName,
-                email: user.email,
-                college: "",
-                branch: "",
-                savedCompanies: [],
-                createdAt: serverTimestamp(),
-              });
-            }
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (!userSnap.exists()) {
+          await setDoc(userRef, {
+            uid: user.uid,
+            name: user.displayName,
+            email: user.email,
+            college: "",
+            branch: "",
+            savedCompanies: [],
+            createdAt: serverTimestamp(),
+          });
         }
       } else {
         setUser(null)
       }
       setLoading(false)
-    })
+    }, (error) => {
+        console.error("Firebase auth error:", error);
+        // If there is an auth error (e.g. invalid API key), stop loading
+        setLoading(false);
+    });
 
     return () => unsubscribe()
   }, [])
 
   const signInWithGoogle = async () => {
-    if (isDemoMode || !auth || !googleProvider) {
-        toast({
-            variant: "destructive",
-            title: "Demo Mode",
-            description: "Sign-in is disabled. Please configure Firebase to enable authentication.",
-        });
-        return;
-    }
     try {
       await signInWithRedirect(auth, googleProvider)
     } catch (error) {
@@ -93,19 +66,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
-    if (isDemoMode || !auth) {
-      // In demo mode, we just clear the user state to simulate logout
-      setUser(null);
-      toast({
-          title: "Signed Out",
-          description: "You have been signed out of Demo Mode.",
-      });
-      return;
-    }
     try {
       await firebaseSignOut(auth)
     } catch (error) {
       console.error("Error signing out: ", error)
+      toast({
+        variant: "destructive",
+        title: "Sign Out Error",
+        description: "Could not sign you out. Please try again.",
+      });
     }
   }
 
