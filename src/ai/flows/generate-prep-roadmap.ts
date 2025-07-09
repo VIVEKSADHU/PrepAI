@@ -10,6 +10,8 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { db } from '@/lib/firebase.client';
+import { collection, query, where, getDocs, limit } from "firebase/firestore";
 
 const GeneratePrepRoadmapInputSchema = z.object({
   cgpa: z.number().describe('The CGPA of the student.'),
@@ -55,26 +57,37 @@ export async function generatePrepRoadmap(input: GeneratePrepRoadmapInput): Prom
   return generatePrepRoadmapFlow(input);
 }
 
+
+const PromptWithContextSchema = GeneratePrepRoadmapInputSchema.extend({
+    summarizedExperienceData: z.string().describe('A summary of real experiences from students of the same or similar college and CGPA applying for the same role.')
+});
+
 const prompt = ai.definePrompt({
   name: 'generatePrepRoadmapPrompt',
-  input: {schema: GeneratePrepRoadmapInputSchema},
+  input: {schema: PromptWithContextSchema},
   output: {schema: GeneratePrepRoadmapOutputSchema},
-  prompt: `You are an AI mentor specializing in helping Tier-3 college students prepare for placements.
+  prompt: `You are a career guidance assistant. Based on the candidate’s inputs and past experience data, generate a realistic and relevant 30-day preparation roadmap.
 
-  Based on the student's CGPA, branch, college, target company, and target role, generate a personalized 30-day roadmap, a list of the most frequently asked interview questions with answers, and suggest core concepts to study.
+Also generate a list of frequently asked questions and core concepts based on the provided information. The entire output must be in a structured JSON format according to the output schema.
 
-  The output must be in a structured JSON format according to the output schema.
+🧑 Candidate Details:
+- Target Role: {{{role}}}
+- College: {{{college}}}
+- CGPA: {{{cgpa}}}
+- Background: {{{branch}}}
 
-  Student Details:
-  CGPA: {{{cgpa}}}
-  Branch: {{{branch}}}
-  College: {{{college}}}
-  Target Company: {{{targetCompany}}}
-  Target Role: {{{role}}}
+📊 Firestore Experience Summary:
+Here are real experiences from students of the same or similar college and CGPA applying for {{{role}}}:
+{{{summarizedExperienceData}}}
 
-  Generate a detailed 30-day roadmap with specific topics and tasks for each day.
-  Generate a list of the most common interview questions for the target company and the student's branch, along with concise answers.
-  Generate a list of the most important concepts the student should study, with brief descriptions of why they are important.
+🧭 Rules:
+1. ONLY generate a roadmap that is realistically achievable for the selected role.
+2. If the target role is non-technical (e.g., Doctor), DO NOT include technical topics like DSA or Leetcode.
+3. Prioritize tasks that match real-world expectations and the student's actual background.
+4. The roadmap must be personalized — e.g., lower CGPA should focus more on building practical experience, while higher CGPA can target elite companies.
+
+🎯 Output Format:
+Your output MUST conform to the JSON schema. Generate a day-wise roadmap for 30 days with clear action steps, a list of frequently asked questions with answers, and a list of core concepts to study.
   `,
 });
 
@@ -85,7 +98,29 @@ const generatePrepRoadmapFlow = ai.defineFlow(
     outputSchema: GeneratePrepRoadmapOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    // 1. Fetch relevant experiences from Firestore to provide context to the AI
+    const experiencesRef = collection(db, "experiences");
+    const q = query(
+        experiencesRef,
+        where("company", "==", input.targetCompany),
+        limit(10) // Limit to 10 recent experiences to avoid a huge prompt
+    );
+    const querySnapshot = await getDocs(q);
+    const experiences = querySnapshot.docs.map(doc => doc.data());
+
+    let summarizedExperienceData = "No past experiences found for this company. Your generated plan should be based on general knowledge for this role.";
+    if (experiences.length > 0) {
+        summarizedExperienceData = experiences.map(exp => {
+            return `Student from ${exp.college} (CGPA: ${exp.cgpa}) applied for ${exp.role}.\nExperience:\n- Round 1: ${exp.round1 || 'N/A'}\n- Round 2: ${exp.round2 || 'N/A'}\n- Round 3: ${exp.round3 || 'N/A'}`;
+        }).join('\n\n---\n\n');
+    }
+
+    // 2. Call the prompt with user input + fetched data
+    const {output} = await prompt({
+        ...input,
+        summarizedExperienceData,
+    });
+    
     return output!;
   }
 );
