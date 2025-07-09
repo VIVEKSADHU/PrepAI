@@ -1,7 +1,7 @@
 
 "use client"
 
-import { useFormStatus, useFormState } from "react-dom"
+import { useFormStatus } from "react-dom"
 import { getPrepRoadmap, type FormState } from "./actions"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/accordion"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Bot, Clock, Rocket, ShieldCheck, Sparkles, Target, Loader2, ListChecks } from "lucide-react"
-import { useEffect } from "react"
+import { useEffect, useActionState } from "react"
 import { useToast } from "@/hooks/use-toast"
 
 const initialState: FormState = {
@@ -49,7 +49,7 @@ function SubmitButton() {
 }
 
 export function AiMentorClientPage() {
-  const [state, formAction] = useFormState(getPrepRoadmap, initialState)
+  const [state, formAction] = useActionState(getPrepRoadmap, initialState)
   const { toast } = useToast()
 
   useEffect(() => {
