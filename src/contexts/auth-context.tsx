@@ -32,7 +32,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (isDemoMode) {
-      setUser(demoUser)
       setLoading(false)
       return
     }
@@ -76,11 +75,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithGoogle = async () => {
     if (isDemoMode) {
-      setUser(demoUser);
-      toast({
-        title: "Welcome to Demo Mode!",
-        description: "You are now logged in as a demo user.",
-      })
+      setLoading(true)
+      // Simulate async action
+      setTimeout(() => {
+        setUser(demoUser)
+        setLoading(false)
+        toast({
+          title: "Welcome to Demo Mode!",
+          description: "You are now logged in as a demo user.",
+        })
+      }, 500)
       return
     }
     try {
@@ -98,12 +102,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     if (isDemoMode) {
-      setUser(null);
-       toast({
-        title: "Signed Out",
-        description: "You have been signed out of demo mode.",
-      })
-      return;
+      setLoading(true)
+      // Simulate async action
+      setTimeout(() => {
+        setUser(null)
+        setLoading(false)
+        toast({
+          title: "Signed Out",
+          description: "You have been signed out of demo mode.",
+        })
+      }, 500)
+      return
     }
     try {
       await firebaseSignOut(auth)
