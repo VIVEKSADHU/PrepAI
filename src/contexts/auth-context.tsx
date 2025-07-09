@@ -11,7 +11,7 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from "firebase/auth"
-import { auth, db, isDemoMode } from "@/lib/firebase.client"
+import { auth, db } from "@/lib/firebase.client"
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { slugify } from "@/lib/utils"
@@ -30,24 +30,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const demoUser = {
-  uid: "demo-user",
-  email: "demo@example.com",
-  displayName: "Demo User",
-  photoURL: `https://avatar.vercel.sh/${slugify("Demo User")}.png?size=96`,
-} as User
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
 
   useEffect(() => {
-    if (isDemoMode) {
-      setLoading(false)
-      return
-    }
-
     const unsubscribe = onAuthStateChanged(
       auth,
       async (user) => {
@@ -87,28 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [toast])
 
   const signInWithEmail = async (email: string, password: string) => {
-    if (isDemoMode) {
-      if (email.toLowerCase() === "demo@example.com") {
-        setLoading(true)
-        setTimeout(() => {
-          setUser(demoUser)
-          setLoading(false)
-          toast({
-            title: "Welcome to Demo Mode!",
-            description: "You are now logged in as a demo user.",
-          })
-        }, 500)
-        return
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Invalid Demo Credentials",
-          description: `Please use "demo@example.com" to log in while in demo mode.`,
-        })
-        throw new Error("Invalid demo credentials")
-      }
-    }
-
     try {
       await signInWithEmailAndPassword(auth, email, password)
     } catch (error: any) {
@@ -137,14 +103,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     email: string,
     password: string
   ) => {
-    if (isDemoMode) {
-      toast({
-        title: "Demo Mode",
-        description: "Account creation is disabled in demo mode.",
-      })
-      return
-    }
-
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -185,18 +143,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
-    if (isDemoMode) {
-      setLoading(true)
-      setTimeout(() => {
-        setUser(null)
-        setLoading(false)
-        toast({
-          title: "Signed Out",
-          description: "You have been signed out of demo mode.",
-        })
-      }, 500)
-      return
-    }
     try {
       await firebaseSignOut(auth)
     } catch (error) {

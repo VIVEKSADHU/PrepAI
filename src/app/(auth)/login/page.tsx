@@ -16,15 +16,13 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Building2, Loader2, AlertTriangle } from "lucide-react"
-import { isDemoMode } from "@/lib/firebase.client"
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
+import { Building2, Loader2 } from "lucide-react"
 
 export default function LoginPage() {
   const { user, loading, signInWithEmail } = useAuth()
   const router = useRouter()
-  const [email, setEmail] = useState(isDemoMode ? "demo@example.com" : "")
-  const [password, setPassword] = useState(isDemoMode ? "demopassword" : "")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -44,12 +42,10 @@ export default function LoginPage() {
       setError(
         err.message || "An unexpected error occurred. Please try again."
       )
-      setIsSubmitting(false)
-    }
-    // On success, the useEffect hook will handle redirection.
-    // On failure, the toast in the context will show the error, and we stop the spinner.
-    if (router.pathname === "/login") {
-        setIsSubmitting(false);
+    } finally {
+      // On success, the useEffect hook will handle redirection.
+      // On failure, the toast in the context will show the error, and we stop the spinner.
+       setIsSubmitting(false)
     }
   }
 
@@ -74,15 +70,6 @@ export default function LoginPage() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {isDemoMode && (
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Demo Mode is Active</AlertTitle>
-            <AlertDescription>
-              Use <b>demo@example.com</b> and any password to continue.
-            </AlertDescription>
-          </Alert>
-        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>

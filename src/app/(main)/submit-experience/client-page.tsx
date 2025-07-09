@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useEffect } from "react"
@@ -25,11 +26,9 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card"
-import { Loader2, AlertTriangle } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { experienceSchema } from "./schema"
 import { useAuth } from "@/contexts/auth-context"
-import { isDemoMode } from "@/lib/firebase.client"
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 
 export function ExperienceForm() {
   const { toast } = useToast()
@@ -59,15 +58,6 @@ export function ExperienceForm() {
   }, [user, form])
 
   async function onSubmit(values: z.infer<typeof experienceSchema>) {
-    if (isDemoMode) {
-      toast({
-        title: "Demo Mode",
-        description:
-          "Experience submission is disabled. Please configure Firebase to enable this feature.",
-      })
-      return
-    }
-
     if (!user) {
       toast({
         variant: "destructive",
@@ -104,19 +94,10 @@ export function ExperienceForm() {
         <CardDescription>All fields with * are required.</CardDescription>
       </CardHeader>
       <CardContent>
-        {isDemoMode && (
-          <Alert className="mb-6">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Demo Mode</AlertTitle>
-            <AlertDescription>
-              The form is disabled because Firebase is not configured.
-            </AlertDescription>
-          </Alert>
-        )}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <fieldset
-              disabled={form.formState.isSubmitting || isDemoMode}
+              disabled={form.formState.isSubmitting}
               className="space-y-8 group"
             >
               <div className="grid md:grid-cols-2 gap-8">
@@ -278,7 +259,7 @@ export function ExperienceForm() {
 
               <Button
                 type="submit"
-                disabled={form.formState.isSubmitting || isDemoMode}
+                disabled={form.formState.isSubmitting}
               >
                 {form.formState.isSubmitting && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

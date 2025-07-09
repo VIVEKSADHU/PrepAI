@@ -16,9 +16,7 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Building2, Loader2, AlertTriangle } from "lucide-react"
-import { isDemoMode } from "@/lib/firebase.client"
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
+import { Building2, Loader2 } from "lucide-react"
 
 export default function SignupPage() {
   const { user, loading, signUpWithEmail } = useAuth()
@@ -71,16 +69,6 @@ export default function SignupPage() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {isDemoMode && (
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Demo Mode is Active</AlertTitle>
-            <AlertDescription>
-              Account creation is disabled. Please use the login page to
-              continue as a demo user.
-            </AlertDescription>
-          </Alert>
-        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
@@ -90,7 +78,6 @@ export default function SignupPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              disabled={isDemoMode}
             />
           </div>
           <div className="space-y-2">
@@ -102,7 +89,6 @@ export default function SignupPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              disabled={isDemoMode}
             />
           </div>
           <div className="space-y-2">
@@ -114,12 +100,11 @@ export default function SignupPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              disabled={isDemoMode}
             />
           </div>
           <Button
             type="submit"
-            disabled={isSubmitting || isDemoMode}
+            disabled={isSubmitting}
             className="w-full"
           >
             {isSubmitting ? (
