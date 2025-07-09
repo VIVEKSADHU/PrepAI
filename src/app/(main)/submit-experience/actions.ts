@@ -23,7 +23,7 @@ type ActionResponse = {
 }
 
 async function updateCompanyData(companyName: string) {
-  // Guard against null db in demo mode
+  // This check is important for server actions.
   if (!db) return;
   
   const companyRef = doc(db, "companies", companyName)
@@ -88,9 +88,9 @@ export async function submitExperienceAction(
   uid: string,
   email: string
 ): Promise<ActionResponse> {
-  // Guard against null db in demo mode
+  // This check is important for server actions.
   if (!db) {
-    return { success: false, message: "Submissions are disabled in demo mode because the database is not configured." }
+    return { success: false, message: "Database not configured. Form submission is disabled." }
   }
 
   const validatedFields = experienceSchema.safeParse(data)

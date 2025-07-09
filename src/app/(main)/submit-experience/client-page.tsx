@@ -19,11 +19,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { submitExperienceAction } from "./actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Loader2, Terminal } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { experienceSchema } from "./schema"
 import { useAuth } from "@/contexts/auth-context"
-import { isDemoMode } from "@/lib/firebase.client"
 
 export function ExperienceForm() {
   const { toast } = useToast()
@@ -54,15 +52,6 @@ export function ExperienceForm() {
 
 
   async function onSubmit(values: z.infer<typeof experienceSchema>) {
-    if (isDemoMode) {
-      toast({
-        variant: "destructive",
-        title: "Demo Mode",
-        description: "Submissions are disabled in demo mode.",
-      });
-      return;
-    }
-
     if (!user) {
         toast({
             variant: "destructive",
@@ -95,18 +84,9 @@ export function ExperienceForm() {
             <CardDescription>All fields with * are required.</CardDescription>
         </CardHeader>
         <CardContent>
-            {isDemoMode && (
-              <Alert className="mb-6">
-                  <Terminal className="h-4 w-4" />
-                  <AlertTitle>Demo Mode</AlertTitle>
-                  <AlertDescription>
-                    This form is disabled. Configure your Firebase credentials to enable submissions.
-                  </AlertDescription>
-              </Alert>
-            )}
             <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <fieldset disabled={isDemoMode} className="space-y-8 group">
+              <fieldset disabled={form.formState.isSubmitting} className="space-y-8 group">
                 <div className="grid md:grid-cols-2 gap-8">
                     <FormField
                       control={form.control}
@@ -240,7 +220,7 @@ export function ExperienceForm() {
                   )}
                 />
                 
-                <Button type="submit" disabled={form.formState.isSubmitting || isDemoMode}>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
                     {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Submit Experience
                 </Button>
