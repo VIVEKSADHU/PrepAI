@@ -1,3 +1,4 @@
+
 "use server"
 
 import { z } from "zod"
@@ -107,15 +108,25 @@ export async function submitExperienceAction(
       success: true,
       message: "Your experience has been submitted successfully!",
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error submitting experience: ", error)
     let message = "An unexpected error occurred. Please check your Firebase configuration and try again.";
-    if (error instanceof Error) {
-        if (error.message.includes('permission-denied')) {
-            message = "Submission failed: Permission denied. Please check your Firestore security rules.";
-        } else if (error.message.includes('invalid-api-key')) {
-             message = "Submission failed: Your Firebase API key appears to be invalid.";
+    
+    // Using error.code for more reliable error detection
+    if (error.code) {
+        switch (error.code) {
+            case 'permission-denied':
+            case 'unauthenticated':
+                message = "Submission failed: Permission denied. Please check your Firestore security rules have been deployed.";
+                break;
+            case 'invalid-argument':
+                message = "Submission failed: Invalid data was sent. Please check the form and try again.";
+                break;
+            default:
+                message = `An unexpected error occurred: ${error.code}. Please try again later.`;
         }
+    } else if (error instanceof Error && error.message.includes('invalid-api-key')) {
+        message = "Submission failed: Your Firebase API key appears to be invalid.";
     }
     return { success: false, message }
   }
