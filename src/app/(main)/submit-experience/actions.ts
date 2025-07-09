@@ -110,24 +110,25 @@ export async function submitExperienceAction(
     }
   } catch (error: any) {
     console.error("Error submitting experience: ", error)
-    let message = "An unexpected error occurred. Please check your Firebase configuration and try again.";
     
-    // Using error.code for more reliable error detection
+    let detailedMessage = "An unexpected error occurred. Please try again later.";
+
     if (error.code) {
         switch (error.code) {
             case 'permission-denied':
             case 'unauthenticated':
-                message = "Submission failed: Permission denied. Please check your Firestore security rules have been deployed.";
+                detailedMessage = `Permission Denied. Please ensure your Firestore security rules are deployed correctly. (Error code: ${error.code})`;
                 break;
             case 'invalid-argument':
-                message = "Submission failed: Invalid data was sent. Please check the form and try again.";
+                detailedMessage = "Invalid data was sent. Please check the form and try again.";
                 break;
             default:
-                message = `An unexpected error occurred: ${error.code}. Please try again later.`;
+                detailedMessage = `An unexpected error occurred: ${error.message} (Code: ${error.code}).`;
         }
-    } else if (error instanceof Error && error.message.includes('invalid-api-key')) {
-        message = "Submission failed: Your Firebase API key appears to be invalid.";
+    } else if (error instanceof Error) {
+        detailedMessage = `An unexpected error occurred: ${error.message}.`;
     }
-    return { success: false, message }
+
+    return { success: false, message: detailedMessage }
   }
 }

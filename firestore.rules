@@ -1,25 +1,21 @@
-
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Logged-in users can read and write to the companies collection.
-    // Write is needed to update statistics like average CGPA.
+    // Logged-in users can read/write company data (for stats, etc.)
     match /companies/{companyId} {
       allow read, write: if request.auth != null;
     }
-
-    // Logged-in users can read and create experiences.
-    // They cannot update or delete them after submission.
+    
+    // Logged-in users can read all experiences and create new ones.
+    // They cannot update or delete experiences.
     match /experiences/{experienceId} {
       allow read, create: if request.auth != null;
     }
 
-    // Users can create, read, and update their OWN user document.
-    // This is important for sign-up and profile updates.
+    // Users can only read and write their own user document.
     match /users/{userId} {
-      allow create, read, update: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
