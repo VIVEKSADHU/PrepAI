@@ -1,29 +1,24 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if a user is signed in
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // Users can only read and write their own document
+    // Users can only read and write their own profile data.
     match /users/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if request.auth.uid == userId;
     }
-
-    // Anyone can read experiences, but only signed-in users can create them
+    
+    // Anyone can read experiences, but only logged-in users can create them.
     match /experiences/{experienceId} {
       allow read: if true;
-      allow create: if isSignedIn();
+      allow create: if request.auth != null;
     }
 
-    // Anyone can read company data, but only signed-in users can update it
-    // (This happens via the server action after an experience is submitted,
-    // which should be authenticated).
-    match /companies/{companyId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+    // Anyone can read company data. 
+    // Writes are restricted to authenticated users (e.g., for updating stats via server actions).
+    match /companies/{companyName} {
+       allow read: if true;
+       allow write: if request.auth != null;
     }
   }
 }

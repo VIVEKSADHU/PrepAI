@@ -1,3 +1,4 @@
+
 "use server"
 
 import {
@@ -54,9 +55,10 @@ export async function getPrepRoadmap(
   try {
     const result = await generatePrepRoadmap(validatedFields.data)
     return { message: "success", data: result }
-  } catch (e) {
+  } catch (e: any) {
+    console.error("Roadmap generation failed:", e);
     return {
-      message: "An unexpected error occurred. Please try again later.",
+      message: e.message || "An unexpected error occurred while generating the roadmap. Please try again later.",
     }
   }
 }
