@@ -43,8 +43,7 @@ export function CompanyCard({
           <div>
             <CardTitle className="font-headline text-xl">{name}</CardTitle>
             <CardDescription>Placement Experiences</CardDescription>
-          </div>
-        </CardHeader>
+          </div> </CardHeader>
         <CardContent className="flex-grow">
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex flex-col space-y-1">
@@ -55,8 +54,7 @@ export function CompanyCard({
               <span className="text-muted-foreground">Avg. CGPA</span>
               <span className="font-semibold">{avgCgpa.toFixed(1)}</span>
             </div>
-          </div>
-        </CardContent>
+          </div> </CardContent>
         <CardFooter>
             <div className="text-sm font-medium text-primary flex items-center w-full">
                 View Submissions <ArrowRight className="ml-2 h-4 w-4" />

@@ -49,7 +49,7 @@ export default function DashboardPage() {
           name: doc.data().name,
           logoURL: doc.data().logoURL || `https://avatar.vercel.sh/${slugify(doc.data().name)}.png?size=96`,
           numExperiences: doc.data().numExperiences || 0,
-          avgCGPA: doc.data().avgCGPA || 0,
+          avgCGPA: doc.data().avgCgpa || 0,
           aiHint: doc.data().aiHint || "company building",
         }))
         setCompanies(companiesData)
