@@ -9,9 +9,10 @@ import {
   signOut as firebaseSignOut,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signInWithPopup,
   updateProfile,
 } from "firebase/auth"
-import { auth, db } from "@/lib/firebase.client"
+import { auth, db, googleProvider } from "@/lib/firebase.client"
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { slugify } from "@/lib/utils"
@@ -20,6 +21,7 @@ interface AuthContextType {
   user: User | null
   loading: boolean
   signInWithEmail: (email: string, password: string) => Promise<void>
+  signInWithGoogle: () => Promise<void>
   signUpWithEmail: (
     name: string,
     email: string,
@@ -98,6 +100,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const signInWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider)
+      const user = result.user
+
+      // Create or update user document in Firestore
+      const userRef = doc(db, "users", user.uid)
+      const userSnap = await getDoc(userRef)
+      
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          uid: user.uid,
+          name: user.displayName || "",
+          email: user.email || "",
+          college: "",
+          branch: "",
+          savedCompanies: [],
+          createdAt: serverTimestamp(),
+        })
+      }
+    } catch (error: any) {
+      let description = "An unknown error occurred. Please try again."
+      if (error.code === "auth/popup-closed-by-user") {
+        description = "Sign-in was cancelled. Please try again."
+      } else if (error.code === "auth/popup-blocked") {
+        description = "Popup was blocked. Please allow popups and try again."
+      } else if (error.code === "auth/invalid-api-key") {
+        description =
+          "Your Firebase API key appears to be invalid. Please check your configuration in `src/lib/firebase.client.ts`."
+      }
+      toast({
+        variant: "destructive",
+        title: "Google Sign In Failed",
+        description,
+      })
+      throw error
+    }
+  }
+
   const signUpWithEmail = async (
     name: string,
     email: string,
@@ -155,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const value = { user, loading, signInWithEmail, signUpWithEmail, signOut }
+  const value = { user, loading, signInWithEmail, signInWithGoogle, signUpWithEmail, signOut }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
