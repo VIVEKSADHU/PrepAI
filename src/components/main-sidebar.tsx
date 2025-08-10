@@ -11,12 +11,15 @@ import {
 } from "@/components/ui/sidebar"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bot, LayoutGrid, PenSquare, Building2, Github } from "lucide-react"
+import { Bot, LayoutGrid, PenSquare, Building2, Github, Workflow, Code2, Newspaper } from "lucide-react"
 
 const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutGrid },
   { href: "/ai-mentor", label: "AI Mentor", icon: Bot },
   { href: "/submit-experience", label: "Submit Experience", icon: PenSquare },
+  { href: "/saas-ai-agents", label: "SaaS AI Agents", icon: Workflow },
+  { href: "/dsa-tracker", label: "DSA Tracker", icon: Code2 },
+  { href: "/dev-news", label: "Dev News", icon: Newspaper },
 ]
 
 export function MainSidebar() {
