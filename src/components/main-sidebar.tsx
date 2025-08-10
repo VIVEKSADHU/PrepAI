@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/sidebar"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bot, LayoutGrid, PenSquare, Building2, Github, Workflow, Code2, Newspaper } from "lucide-react"
+import { Bot, LayoutGrid, PenSquare, Building2, Github, Workflow, Code2, Newspaper, FileText } from "lucide-react"
 
 const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutGrid },
@@ -20,6 +20,7 @@ const menuItems = [
   { href: "/saas-ai-agents", label: "SaaS AI Agents", icon: Workflow },
   { href: "/dsa-tracker", label: "DSA Tracker", icon: Code2 },
   { href: "/dev-news", label: "Dev News", icon: Newspaper },
+  { href: "/resume-ats-calculator", label: "Resume ATS Calculator", icon: FileText },
 ]
 
 export function MainSidebar() {
@@ -29,7 +30,7 @@ export function MainSidebar() {
   const adjustedPathname = pathname === '/dashboard' ? '/' : pathname;
 
   return (
-    <Sidebar collapsible="icon" className="hidden md:flex">
+    <Sidebar collapsible="icon" className="hidden md:flex"> 
       <SidebarHeader>
         <Link
           href="/"

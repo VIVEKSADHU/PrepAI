@@ -29,22 +29,12 @@ export default function DevNewsPage() {
         setLoading(true)
         const newsPromises = []
         
-        // Headers for proper API requests
+        // Headers for proper API requests (simplified for better compatibility)
         const headers = {
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-          'Accept-Encoding': 'gzip, deflate, br, zstd',
-          'Accept-Language': 'en-US,en;q=0.7',
-          'Cache-Control': 'max-age=0',
-          'Sec-Ch-Ua': '"Not;A=Brand";v="99", "Brave";v="139", "Chromium";v="139"',
-          'Sec-Ch-Ua-Mobile': '?0',
-          'Sec-Ch-Ua-Platform': '"Windows"',
-          'Sec-Fetch-Dest': 'document',
-          'Sec-Fetch-Mode': 'navigate',
-          'Sec-Fetch-Site': 'same-origin',
-          'Sec-Fetch-User': '?1',
-          'Sec-Gpc': '1',
-          'Upgrade-Insecure-Requests': '1',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+          'Accept': '*/*',
+          'User-Agent': 'Thunder Client (https://www.thunderclient.com)',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Connection': 'keep-alive'
         }
         
         // Fetch news from IDs 1 to 10
@@ -52,12 +42,23 @@ export default function DevNewsPage() {
           newsPromises.push(
             fetch(`https://devbytes.co.in/news/${i}`, { 
               headers,
-              mode: 'cors',
-              credentials: 'omit'
+              method: 'GET'
             })
               .then(res => {
                 if (!res.ok) throw new Error(`HTTP ${res.status}`)
-                return res.json()
+                return res.text().then(text => {
+                  try {
+                    return JSON.parse(text)
+                  } catch {
+                    // If it's HTML, extract basic info
+                    return {
+                      title: `News Article ${i}`,
+                      description: text.substring(0, 200) + '...',
+                      url: `https://devbytes.co.in/news/${i}`,
+                      id: i
+                    }
+                  }
+                })
               })
               .catch((error) => {
                 console.warn(`Failed to fetch news ${i}:`, error)
@@ -67,17 +68,34 @@ export default function DevNewsPage() {
         }
 
         const results = await Promise.all(newsPromises)
+        console.log('API Results:', results) // Debug log
+        
         const validNews = results
-          .filter(result => result && (result.title || result.headline)) // Filter out failed requests
-          .map((result, index) => ({
-            id: index + 1,
-            title: result.title || result.headline || `News Article ${index + 1}`,
-            description: result.description || result.content || result.excerpt || result.summary || "Click to read more about this news article.",
-            url: result.url || result.link || result.permalink || `https://devbytes.co.in/news/${index + 1}`,
-            publishedAt: result.publishedAt || result.published_at || result.date || result.created_at || new Date().toISOString(),
-            source: result.source || result.author || result.publisher || "DevBytes",
-            category: result.category || result.tag || result.type || result.section || "Technology"
-          }))
+          .filter(result => result !== null) // Filter out failed requests
+          .map((result, index) => {
+            // Handle different response formats
+            if (typeof result === 'string') {
+              return {
+                id: index + 1,
+                title: `DevBytes Article ${index + 1}`,
+                description: result.substring(0, 200) + '...',
+                url: `https://devbytes.co.in/news/${index + 1}`,
+                publishedAt: new Date().toISOString(),
+                source: "DevBytes",
+                category: "Technology"
+              }
+            }
+            
+            return {
+              id: result.id || index + 1,
+              title: result.title || result.headline || result.name || `DevBytes Article ${index + 1}`,
+              description: result.description || result.content || result.excerpt || result.summary || result.body || "Click to read more about this developer news article.",
+              url: result.url || result.link || result.permalink || `https://devbytes.co.in/news/${index + 1}`,
+              publishedAt: result.publishedAt || result.published_at || result.date || result.created_at || result.updated_at || new Date().toISOString(),
+              source: result.source || result.author || result.publisher || result.site || "DevBytes",
+              category: result.category || result.tag || result.type || result.section || result.topic || "Technology"
+            }
+          })
 
         // If no valid news found, add some sample data to show the UI works
         if (validNews.length === 0) {
@@ -129,6 +147,31 @@ export default function DevNewsPage() {
     window.location.reload()
   }
 
+  const testApiCall = async () => {
+    try {
+      const response = await fetch('https://devbytes.co.in/news/9', {
+        headers: {
+          'Accept': '*/*',
+          'User-Agent': 'Thunder Client (https://www.thunderclient.com)',
+        }
+      })
+      const text = await response.text()
+      console.log('Raw API Response:', text)
+      console.log('Response Status:', response.status)
+      console.log('Response Headers:', Object.fromEntries(response.headers.entries()))
+      
+      // Try to parse as JSON
+      try {
+        const json = JSON.parse(text)
+        console.log('Parsed JSON:', json)
+      } catch {
+        console.log('Response is not JSON, likely HTML')
+      }
+    } catch (error) {
+      console.error('API Test Error:', error)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
       <div className="container mx-auto px-4 py-8">
@@ -158,16 +201,26 @@ export default function DevNewsPage() {
                 </p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={refreshNews}
-              disabled={loading}
-              className="gap-2"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshNews}
+                disabled={loading}
+                className="gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={testApiCall}
+                className="gap-2"
+              >
+                Test API
+              </Button>
+            </div>
           </div>
         </motion.div>
 
